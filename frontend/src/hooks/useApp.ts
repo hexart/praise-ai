@@ -94,12 +94,14 @@ export function useApp(): UseAppReturn {
 
       console.log('[useApp] Synced emotion service provider and model:', provider.currentModel);
     }
-  }, [provider.provider, provider.currentModel, emotion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [provider.provider, provider.currentModel, emotion.getEmotionService]);
 
   // 应用是否准备就绪
   const isReady = useMemo(() => {
-    return Boolean(provider.provider) && provider.models.length > 0;
-  }, [provider.provider, provider.models.length]);
+    // 应用就绪条件：有可用的Provider（模型列表可以后续加载）
+    return Boolean(provider.provider) && !provider.isLoading;
+  }, [provider.provider, provider.isLoading]);
 
   // 更新设置
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {

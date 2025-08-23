@@ -48,10 +48,14 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   // Provider 切换时自动加载模型
   useEffect(() => {
     if (currentProvider && testStatus === 'success') {
-      handleLoadModels();
+      // 延迟加载模型，确保Provider切换完成
+      const timer = setTimeout(() => {
+        handleLoadModels();
+      }, 100);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentProvider]);
+  }, [currentProvider, testStatus]);
 
   // 处理Provider切换
   const handleProviderSelect = async (providerType: ProviderType) => {
@@ -61,18 +65,19 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       ollama: {
         type: 'ollama',
         apiUrl: import.meta.env.VITE_OLLAMA_URL || 'http://localhost:8000',
-        defaultModel: 'llama2'
+        defaultModel: import.meta.env.VITE_OLLAMA_DEFAULT_MODEL || 'llama2'
       },
       openai: {
         type: 'openai',
         apiUrl: import.meta.env.VITE_OPENAI_URL || 'https://api.openai.com/v1',
         apiKey: import.meta.env.VITE_OPENAI_KEY || '',
-        defaultModel: 'gpt-3.5-turbo'
+        defaultModel: import.meta.env.VITE_OPENAI_DEFAULT_MODEL || 'gpt-3.5-turbo'
       },
       anthropic: {
         type: 'anthropic',
-        apiUrl: 'https://api.anthropic.com/v1',
-        apiKey: ''
+        apiUrl: import.meta.env.VITE_CLAUDE_URL || 'https://api.anthropic.com/v1',
+        apiKey: import.meta.env.VITE_CLAUDE_KEY || '',
+        defaultModel: import.meta.env.VITE_CLAUDE_DEFAULT_MODEL || 'claude-opus-4-1-20250805'
       },
       gemini: {
         type: 'gemini',
@@ -90,12 +95,12 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     const success = await onProviderChange(providerType, newConfig);
 
     if (success) {
-      setTestStatus('idle');
-      setTestMessage('');
-      // 切换成功后自动加载模型
-      setTimeout(() => {
-        handleLoadModels();
-      }, 500);
+      setTestStatus('success'); // 设置为成功状态，触发useEffect加载模型
+      setTestMessage('切换成功！');
+      console.log(`[ProviderSettings] Successfully switched to ${providerType}`);
+    } else {
+      setTestStatus('error');
+      setTestMessage('切换失败，请检查配置');
     }
   };
 
@@ -109,10 +114,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       if (success) {
         setTestStatus('success');
         setTestMessage('连接测试成功！');
-        // 连接成功后自动加载模型
-        setTimeout(() => {
-          handleLoadModels();
-        }, 500);
+        // 连接成功后立即加载模型（由useEffect触发）
       } else {
         setTestStatus('error');
         setTestMessage('连接测试失败，请检查配置');
@@ -157,6 +159,37 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     try {
       await onLoadModels();
       console.log('[ProviderSettings] Models loaded successfully');
+      
+      // 自动选择模型：优先选择默认模型，如果不存在则选择第一个可用模型
+      if (models.length > 0 && !currentModel) {
+        const defaultModel = currentConfig.defaultModel;
+        let targetModel: string | null = null;
+        
+        // 1. 优先使用配置的默认模型（如果存在）
+        if (defaultModel && models.some(m => m.id === defaultModel)) {
+          targetModel = defaultModel;
+          console.log('[ProviderSettings] Auto-selecting default model:', defaultModel);
+        }
+        // 2. 如果默认模型不存在，使用第一个可用模型
+        else if (models.length > 0) {
+          targetModel = models[0].id;
+          console.log('[ProviderSettings] Auto-selecting first available model:', targetModel);
+        }
+        
+        // 执行模型切换
+        if (targetModel) {
+          try {
+            const success = await onModelSwitch(targetModel);
+            if (success) {
+              console.log('[ProviderSettings] Successfully auto-selected model:', targetModel);
+            } else {
+              console.warn('[ProviderSettings] Failed to auto-select model:', targetModel);
+            }
+          } catch (error) {
+            console.error('[ProviderSettings] Error auto-selecting model:', error);
+          }
+        }
+      }
     } catch (error) {
       console.error('[ProviderSettings] Failed to load models:', error);
     } finally {

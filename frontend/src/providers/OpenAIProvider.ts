@@ -154,38 +154,37 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   /**
-  发送流式消息
+  构建OpenAI格式的消息
   */
-  async sendStreamMessage(
-    request: ChatRequest,
-    onChunk: StreamCallback,
-    onMetadata?: MetadataCallback
-  ): Promise<void> {
-    const model = this.currentModel || this.config.defaultModel;
-    if (!model) {
-      throw new Error('No model selected');
+  private buildMessages(request: ChatRequest): Array<{ role: string; content: string; }> {
+    const messages: Array<{ role: string; content: string }> = [];
+
+    // 添加系统提示词
+    if (request.systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: request.systemPrompt
+      });
     }
 
-    const payload = {
-      model,
-      messages: this.buildMessages(request),
-      stream: true,
-      temperature: request.options?.temperature || 0.7,
-      max_tokens: request.options?.maxTokens || 1000
-    };
+    // 添加历史对话
+    const recentHistory = request.chatHistory.slice(-10); // 保留最近10轮对话
+    for (const msg of recentHistory) {
+      if (msg.role === 'user' || msg.role === 'assistant') {
+        messages.push({
+          role: msg.role,
+          content: msg.content
+        });
+      }
+    }
 
-    const response = await fetch(`${this.config.apiUrl}/chat/completions`, {
-      method: 'POST',
-      headers: this.buildHeaders(),
-      body: JSON.stringify(payload)
+    // 添加当前消息
+    messages.push({
+      role: 'user',
+      content: request.message
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    await this.handleStream(response, onChunk, onMetadata);
+    return messages;
   }
 
   /**
@@ -199,7 +198,7 @@ export class OpenAIProvider extends BaseProvider {
         error: 'No model selected'
       };
     }
-
+    
     const payload = {
       model,
       messages: this.buildMessages(request),
@@ -257,39 +256,42 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   /**
-  构建OpenAI格式的消息
+  发送流式消息
   */
-  private buildMessages(request: ChatRequest): Array<{
-    role: string;
-    content: string;
-  }> {
-    const messages: Array<{ role: string; content: string }> = [];
-
-    // 添加系统提示词
-    if (request.systemPrompt) {
-      messages.push({
-        role: 'system',
-        content: request.systemPrompt
-      });
+  async sendStreamMessage(
+    request: ChatRequest,
+    onChunk: StreamCallback,
+    onMetadata?: MetadataCallback
+  ): Promise<void> {
+    const model = this.currentModel || this.config.defaultModel;
+    if (!model) {
+      throw new Error('No model selected');
     }
+    
+    const payload = {
+      model,
+      messages: this.buildMessages(request),
+      stream: true,
+      temperature: request.options?.temperature || 0.7,
+      max_tokens: request.options?.maxTokens || 1000
+    };
 
-    // 添加历史对话
-    const recentHistory = request.chatHistory.slice(-10); // 保留最近10轮对话
-    for (const msg of recentHistory) {
-      if (msg.role === 'user' || msg.role === 'assistant') {
-        messages.push({
-          role: msg.role,
-          content: msg.content
-        });
-      }
-    }
-
-    // 添加当前消息
-    messages.push({
-      role: 'user',
-      content: request.message
+    const response = await fetch(`${this.config.apiUrl}/chat/completions`, {
+      method: 'POST',
+      headers: this.buildHeaders(),
+      body: JSON.stringify(payload)
     });
 
-    return messages;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    await this.handleStream(response, onChunk, onMetadata);
   }
+}
+
+// 导出一个工厂函数便于创建实例
+export function createOpenAIProvider(config: ProviderConfig): OpenAIProvider {
+  return new OpenAIProvider(config);
 }

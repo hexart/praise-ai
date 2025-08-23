@@ -79,13 +79,18 @@ export abstract class BaseProvider implements IProvider {
       const url = `${this.config.apiUrl.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.config.timeout || 30000);
+      
       const response = await fetch(url, {
         signal: controller.signal,
         headers: this.buildHeaders(),
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache',
         ...options
       });
 
       clearTimeout(timeoutId);
+      
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
         return {
@@ -94,6 +99,7 @@ export abstract class BaseProvider implements IProvider {
           code: response.status.toString()
         };
       }
+      
       const data = await response.json();
       return {
         success: true,

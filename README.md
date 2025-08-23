@@ -14,6 +14,7 @@
 ### 多 Provider 支持
 - **本地 Ollama**：支持本地部署的开源模型（通过 OpenAI 兼容接口）
 - **OpenAI 兼容 API**：支持 OpenAI 官方或兼容的 API 服务
+- **Anthropic Claude**：支持 Claude 系列模型，包括 Claude 4 Sonnet、Opus 等
 - **动态切换**：实时切换不同的 AI 服务提供商
 
 ### 高级特性
@@ -76,18 +77,35 @@ yarn install
 
 ### 3. 环境配置
 
-创建 `.env.local` 文件并配置环境变量：
+复制环境变量模板并配置：
+
+```bash
+# 复制环境变量模板
+cp .env.example .env.local
+```
+
+编辑 `.env.local` 文件，根据需要填入相应的 API 密钥：
 
 ```env
 # Ollama 配置（本地模型服务）
 VITE_OLLAMA_URL=http://localhost:8000
 VITE_OLLAMA_DEFAULT_MODEL=llama2
 
-# OpenAI 配置（可选）
+# OpenAI 配置（如需使用 OpenAI 服务）
 VITE_OPENAI_URL=https://api.openai.com/v1
-VITE_OPENAI_KEY=your-openai-api-key
-VITE_OPENAI_DEFAULT_MODEL=gpt-5
+VITE_OPENAI_KEY=your-actual-openai-api-key
+VITE_OPENAI_DEFAULT_MODEL=gpt-4-0613
+
+# Anthropic Claude 配置（如需使用 Claude 服务）
+VITE_CLAUDE_URL=https://api.anthropic.com/v1
+VITE_CLAUDE_KEY=your-actual-anthropic-api-key
+VITE_CLAUDE_DEFAULT_MODEL=claude-opus-4-1-20250805
 ```
+
+> **注意**：
+> - `.env.local` 文件包含敏感信息，已被 `.gitignore` 忽略，不会提交到版本控制
+> - 如果只使用本地 Ollama 服务，可以不填写 OpenAI 和 Claude 的 API 密钥
+> - API 密钥请从对应服务商的官网获取
 
 ### 4. 启动开发服务器
 
@@ -117,7 +135,10 @@ pnpm preview
 | `VITE_OLLAMA_DEFAULT_MODEL` | Ollama 默认模型 | `llama2` | 否 |
 | `VITE_OPENAI_URL` | OpenAI API 地址 | `https://api.openai.com/v1` | 否 |
 | `VITE_OPENAI_KEY` | OpenAI API 密钥 | - | 使用 OpenAI 时必需 |
-| `VITE_OPENAI_DEFAULT_MODEL` | OpenAI 默认模型 | `gpt-5` | 否 |
+| `VITE_OPENAI_DEFAULT_MODEL` | OpenAI 默认模型 | `gpt-3.5-turbo` | 否 |
+| `VITE_CLAUDE_URL` | Claude API 地址 | `https://api.anthropic.com/v1` | 否 |
+| `VITE_CLAUDE_KEY` | Anthropic API 密钥 | - | 使用 Claude 时必需 |
+| `VITE_CLAUDE_DEFAULT_MODEL` | Claude 默认模型 | `claude-opus-4-1-20250805` | 否 |
 
 ### Provider 配置
 
@@ -132,6 +153,12 @@ pnpm preview
 - **优势**：云端服务、高质量回复、快速响应
 - **要求**：需要有效的 API 密钥
 - **配置**：设置 `VITE_OPENAI_URL` 和 `VITE_OPENAI_KEY`
+
+#### Anthropic Claude
+- **优势**：高级推理、长上下文、安全可靠、创意写作
+- **支持模型**：Claude 4 Sonnet、Claude 4 Opus、Claude 3 Sonnet、Claude 3 Haiku
+- **要求**：需要 Anthropic API 密钥
+- **配置**：设置 `VITE_CLAUDE_URL` 和 `VITE_CLAUDE_KEY`
 
 ## 🎮 使用指南
 
@@ -293,7 +320,7 @@ pnpm build
 - 详细的调试日志和错误处理
 
 #### ✅ Provider管理系统增强
-- 多Provider支持（Ollama、OpenAI）
+- 多Provider支持（Ollama、OpenAI、Claude）
 - 动态Provider切换和模型管理
 - 统一的Provider接口设计
 
@@ -442,13 +469,14 @@ MIT License
 ### 开发状态
 - ✅ 核心功能完成
 - ✅ 情感分析系统
-- ✅ 多Provider支持
+- ✅ 多Provider支持（Ollama、OpenAI、Claude）
 - ✅ 响应多样性
+- 🚀 Claude API集成完成（v0.2.1）
 - 🚧 高级功能开发中
 - 🚧 性能优化进行中
 
 ### 版本规划
-- **v0.3.0**: 增强UI/UX，添加更多AI Provider（Anthropic、Google Gemini）
+- **v0.3.0**: 增强UI/UX，添加Google Gemini Provider，模型性能指标
 - **v0.4.0**: 情感分析可视化，高级统计功能，模型性能指标
 - **v0.5.0**: 高级聊天功能（主题标签、全文搜索、对话模板）
 - **v1.0.0**: 正式版本，完整功能集，生产环境优化

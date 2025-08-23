@@ -29,6 +29,104 @@ export class OllamaProvider extends BaseProvider {
   }
 
   /**
+   * 测试连接 - 使用 OpenAI 格式的端点
+   */
+  async testConnection(): Promise<APIResponse<ConnectionTestResponse>> {
+    const validationError = this.validateConfig();
+    if (validationError) {
+      return {
+        success: false,
+        error: validationError
+      };
+    }
+
+    const startTime = Date.now();
+
+    try {
+      const modelsResult = await this.request<{
+        object?: string;
+        data?: Array<{ id: string }>
+      }>('v1/models');
+
+      if (modelsResult.success && modelsResult.data?.data) {
+        this.isConnected = true;
+        return {
+          success: true,
+          data: {
+            success: true,
+            latency: Date.now() - startTime,
+            version: 'ollama-openai-compatible',
+            models_count: modelsResult.data.data.length
+          }
+        };
+      }
+
+      // 连接失败
+      this.isConnected = false;
+      return {
+        success: false,
+        error: modelsResult.error || 'Connection test failed'
+      };
+    } catch (error) {
+      this.isConnected = false;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Connection test failed'
+      };
+    }
+  }
+
+  /**
+   * 获取模型列表 - 使用 OpenAI 格式的端点
+   */
+  async listModels(): Promise<APIResponse<ModelsResponse>> {
+    const result = await this.request<{
+      object: string;
+      data: Array<{
+        id: string;
+        object: string;
+        created: number;
+        owned_by: string;
+      }>
+    }>('v1/models');
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || 'Failed to fetch models'
+      };
+    }
+
+    // 转换为前端期望的格式
+    const models = result.data!.data.map(model => ({
+      id: model.id,
+      name: model.id,
+      description: `${model.owned_by} model`,
+      created_at: model.created * 1000 // 转换为毫秒
+    }));
+
+    return {
+      success: true,
+      data: {
+        models,
+        currentModel: this.currentModel || models[0]?.id
+      }
+    };
+  }
+
+  /**
+   * 切换模型
+   */
+  async switchModel(modelName: string): Promise<APIResponse<void>> {
+    // 对于 OpenAI 兼容接口，我们只需要记录模型名称
+    // 实际的模型切换在发送消息时进行
+    this.currentModel = modelName;
+    return {
+      success: true
+    };
+  }
+
+  /**
    * 处理流式数据块 - 现在处理 OpenAI 格式的 SSE
    */
   protected processStreamChunk(
@@ -51,7 +149,7 @@ export class OllamaProvider extends BaseProvider {
 
         try {
           const parsed = JSON.parse(data);
-          
+
           // 检查错误
           if (parsed.error) {
             console.error('[OllamaProvider] Stream error:', parsed.error);
@@ -69,7 +167,7 @@ export class OllamaProvider extends BaseProvider {
             if (parsed.choices[0].finish_reason === 'stop') {
               onChunk('', true);
             }
-            
+
             if (onMetadata) {
               onMetadata({
                 model: parsed.model,
@@ -121,56 +219,6 @@ export class OllamaProvider extends BaseProvider {
     });
 
     return messages;
-  }
-
-  /**
-   * 获取模型列表 - 使用 OpenAI 格式的端点
-   */
-  async listModels(): Promise<APIResponse<ModelsResponse>> {
-    const result = await this.request<{
-      object: string;
-      data: Array<{
-        id: string;
-        object: string;
-        created: number;
-        owned_by: string;
-      }>
-    }>('v1/models');
-    
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error || 'Failed to fetch models'
-      };
-    }
-
-    // 转换为前端期望的格式
-    const models = result.data!.data.map(model => ({
-      id: model.id,
-      name: model.id,
-      description: `${model.owned_by} model`,
-      created_at: model.created * 1000 // 转换为毫秒
-    }));
-
-    return {
-      success: true,
-      data: {
-        models,
-        currentModel: this.currentModel || models[0]?.id
-      }
-    };
-  }
-
-  /**
-   * 切换模型
-   */
-  async switchModel(modelName: string): Promise<APIResponse<void>> {
-    // 对于 OpenAI 兼容接口，我们只需要记录模型名称
-    // 实际的模型切换在发送消息时进行
-    this.currentModel = modelName;
-    return {
-      success: true
-    };
   }
 
   /**
@@ -286,54 +334,6 @@ export class OllamaProvider extends BaseProvider {
     }
 
     await this.handleStream(response, onChunk, onMetadata);
-  }
-
-  /**
-   * 测试连接 - 使用 OpenAI 格式的端点
-   */
-  async testConnection(): Promise<APIResponse<ConnectionTestResponse>> {
-    const validationError = this.validateConfig();
-    if (validationError) {
-      return {
-        success: false,
-        error: validationError
-      };
-    }
-
-    const startTime = Date.now();
-    
-    try {
-      const modelsResult = await this.request<{ 
-        object?: string;
-        data?: Array<{ id: string }> 
-      }>('v1/models');
-      
-      if (modelsResult.success && modelsResult.data?.data) {
-        this.isConnected = true;
-        return {
-          success: true,
-          data: {
-            success: true,
-            latency: Date.now() - startTime,
-            version: 'ollama-openai-compatible',
-            models_count: modelsResult.data.data.length
-          }
-        };
-      }
-
-      // 连接失败
-      this.isConnected = false;
-      return {
-        success: false,
-        error: modelsResult.error || 'Connection test failed'
-      };
-    } catch (error) {
-      this.isConnected = false;
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Connection test failed'
-      };
-    }
   }
 
   /**

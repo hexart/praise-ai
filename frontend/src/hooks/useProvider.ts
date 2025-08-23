@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BaseProvider } from '../providers/BaseProvider';
 import { OllamaProvider } from '../providers/OllamaProvider';
 import { OpenAIProvider } from '../providers/OpenAIProvider';
+import { ClaudeProvider } from '../providers/ClaudeProvider';
 import type { ProviderType, ProviderConfig, ModelInfo } from '../types/provider';
 import { getFromStorage, saveToStorage } from '../utils/storage';
 
@@ -50,6 +51,12 @@ const SUPPORTED_PROVIDERS = [
     name: 'OpenAI 兼容 API',
     description: 'OpenAI官方或兼容的API服务',
     features: ['云端服务', '高质量回复', '快速响应']
+  },
+  {
+    type: 'anthropic' as ProviderType,
+    name: 'Anthropic Claude',
+    description: 'Anthropic的Claude系列模型',
+    features: ['高级推理', '长上下文', '安全可靠']
   }
 ];
 
@@ -64,12 +71,13 @@ const DEFAULT_CONFIGS: Record<ProviderType, ProviderConfig> = {
     type: 'openai',
     apiUrl: import.meta.env.VITE_OPENAI_URL || 'https://api.openai.com/v1',
     apiKey: import.meta.env.VITE_OPENAI_KEY || '',
-    defaultModel: import.meta.env.VITE_OPENAI_DEFAULT_MODEL || 'gpt-3.5-turbo'
+    defaultModel: import.meta.env.VITE_OPENAI_DEFAULT_MODEL || 'gpt-5'
   },
   anthropic: {
     type: 'anthropic',
-    apiUrl: 'https://api.anthropic.com/v1',
-    apiKey: ''
+    apiUrl: import.meta.env.VITE_CLAUDE_URL || 'https://api.anthropic.com/v1',
+    apiKey: import.meta.env.VITE_CLAUDE_KEY || '',
+    defaultModel: import.meta.env.VITE_CLAUDE_DEFAULT_MODEL || 'claude-opus-4-1-20250805'
   },
   gemini: {
     type: 'gemini',
@@ -97,18 +105,18 @@ export function useProvider(): UseProviderReturn {
     const savedConfig = getFromStorage(STORAGE_KEYS.PROVIDER_CONFIG, null);
     const savedProviderType = getFromStorage(STORAGE_KEYS.PROVIDER_TYPE, 'ollama' as ProviderType);
     const defaultConfig = DEFAULT_CONFIGS[savedProviderType];
-    
+
     if (!defaultConfig) {
       // 如果没有找到默认配置，使用 ollama 作为后备
       return DEFAULT_CONFIGS.ollama;
     }
-    
+
     // 合并保存的配置和默认配置
-    if (savedConfig && typeof savedConfig === 'object' && 
-        defaultConfig && typeof defaultConfig === 'object') {
+    if (savedConfig && typeof savedConfig === 'object' &&
+      defaultConfig && typeof defaultConfig === 'object') {
       return { ...defaultConfig, ...(savedConfig as ProviderConfig) };
     }
-    
+
     return defaultConfig;
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -131,7 +139,7 @@ export function useProvider(): UseProviderReturn {
       if (!defaultConfig) {
         throw new Error(`No default config for provider type: ${type}`);
       }
-      
+
       const finalConfig = {
         ...defaultConfig,
         ...providerConfig
@@ -146,6 +154,12 @@ export function useProvider(): UseProviderReturn {
             throw new Error('OpenAI API key is required');
           }
           newProvider = new OpenAIProvider(finalConfig);
+          break;
+        case 'anthropic':
+          if (!finalConfig.apiKey) {
+            throw new Error('Anthropic API key is required');
+          }
+          newProvider = new ClaudeProvider(finalConfig);
           break;
         default:
           throw new Error(`Unsupported provider type: ${type}`);
@@ -179,18 +193,18 @@ export function useProvider(): UseProviderReturn {
       if (!defaultConfig) {
         throw new Error(`Invalid provider type: ${providerType}`);
       }
-      
+
       const finalConfig = {
         ...defaultConfig,
         ...config
       };
-      
+
       const newProvider = await createProvider(providerType, finalConfig);
       setProvider(newProvider);
 
       if (newProvider) {
         console.log(`[useProvider] Successfully initialized ${providerType} provider`);
-        
+
         // 恢复之前选择的模型
         const savedModel = getFromStorage(STORAGE_KEYS.CURRENT_MODEL, null);
         if (savedModel) {
@@ -213,11 +227,14 @@ export function useProvider(): UseProviderReturn {
   const switchProvider = useCallback(async (type: ProviderType, newConfig: ProviderConfig): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // 验证配置
       if (type === 'openai' && !newConfig.apiKey) {
         throw new Error('OpenAI API key is required');
+      }
+      if (type === 'anthropic' && !newConfig.apiKey) {
+        throw new Error('Anthropic API key is required');
       }
 
       // 合并默认配置
@@ -225,7 +242,7 @@ export function useProvider(): UseProviderReturn {
       if (!defaultConfig) {
         throw new Error(`No default config for provider type: ${type}`);
       }
-      
+
       const finalConfig = {
         ...defaultConfig,
         ...newConfig
@@ -234,7 +251,7 @@ export function useProvider(): UseProviderReturn {
       // 创建新Provider
       const newProvider = await createProvider(type, finalConfig);
       if (!newProvider) {
-        return false;
+        throw new Error('Failed to create provider instance');
       }
 
       // 测试连接
@@ -273,7 +290,7 @@ export function useProvider(): UseProviderReturn {
     const updatedConfig = { ...config, ...newConfig };
     setConfig(updatedConfig);
     saveToStorage(STORAGE_KEYS.PROVIDER_CONFIG, updatedConfig);
-    
+
     // 如果Provider已经存在，更新其配置
     if (provider) {
       provider.updateConfig(updatedConfig);
@@ -296,16 +313,16 @@ export function useProvider(): UseProviderReturn {
 
       if (result.success && result.data) {
         setModels(result.data.models);
-        
+
         // 优先使用：1. 已保存的模型 2. Provider的当前模型 3. 默认模型 4. 第一个可用模型
         const savedModel = getFromStorage(STORAGE_KEYS.CURRENT_MODEL, null);
-        const newCurrentModel = 
+        const newCurrentModel =
           (savedModel && result.data.models.some(m => m.id === savedModel)) ? savedModel :
-          result.data.currentModel || 
-          config.defaultModel ||
-          result.data.models[0]?.id || 
-          null;
-        
+            result.data.currentModel ||
+            config.defaultModel ||
+            result.data.models[0]?.id ||
+            null;
+
         setCurrentModel(newCurrentModel);
 
         // 确保Provider实例也设置了模型
@@ -323,7 +340,7 @@ export function useProvider(): UseProviderReturn {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load models';
       setError(errorMessage);
       console.error('[useProvider] Failed to load models:', err);
-      
+
       // 如果加载模型失败但有默认模型，尝试使用默认模型
       if (config.defaultModel && provider) {
         console.log(`[useProvider] Falling back to default model: ${config.defaultModel}`);
@@ -400,12 +417,14 @@ export function useProvider(): UseProviderReturn {
     }
   }, [provider]);
 
-  // Provider初始化完成后自动加载模型
+  // Provider初始化完成后自动加载模型（仅在初始化时）
   useEffect(() => {
-    if (provider && models.length === 0) {
+    // 只在初始化时自动加载模型，且不是正在加载状态
+    if (provider && models.length === 0 && !isLoading) {
+      console.log('[useProvider] Auto-loading models for initial setup...');
       loadModels();
     }
-  }, [provider, loadModels, models.length]);
+  }, [provider, models.length, isLoading, loadModels]);
 
   // Memoized值
   const supportedProviders = useMemo(() => SUPPORTED_PROVIDERS, []);
@@ -417,7 +436,7 @@ export function useProvider(): UseProviderReturn {
     config,
     isLoading,
     error,
-    
+
     // 模型管理
     models,
     currentModel,
