@@ -43,13 +43,22 @@
 - **PNPM**：>= 8.0.0（推荐使用 PNPM）
 - **现代浏览器**：Chrome 90+、Firefox 88+、Safari 14+、Edge 90+
 
+## 📚 项目文档
+
+本项目提供了完整的文档体系，涵盖用户使用、开发指南和API参考：
+
+- **[PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md)** - 完整项目文档，包含详细的架构说明、部署指南和故障排除
+- **[DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - 开发者指南，包含扩展开发、测试和最佳实践
+- **[API_REFERENCE.md](./API_REFERENCE.md)** - API参考文档，详细的接口说明和使用示例
+- **[backend/README.md](./backend/README.md)** - 后端代理服务详细说明
+
 ## 🚀 快速开始
 
 ### 1. 克隆项目
 
 ```bash
-git clone <your-repo-url>
-cd frontend
+git clone https://github.com/hexart/praise-ai.git
+cd praise-ai/frontend
 ```
 
 ### 2. 安装依赖
@@ -77,7 +86,7 @@ VITE_OLLAMA_DEFAULT_MODEL=llama2
 # OpenAI 配置（可选）
 VITE_OPENAI_URL=https://api.openai.com/v1
 VITE_OPENAI_KEY=your-openai-api-key
-VITE_OPENAI_DEFAULT_MODEL=gpt-3.5-turbo
+VITE_OPENAI_DEFAULT_MODEL=gpt-5
 ```
 
 ### 4. 启动开发服务器
@@ -108,7 +117,7 @@ pnpm preview
 | `VITE_OLLAMA_DEFAULT_MODEL` | Ollama 默认模型 | `llama2` | 否 |
 | `VITE_OPENAI_URL` | OpenAI API 地址 | `https://api.openai.com/v1` | 否 |
 | `VITE_OPENAI_KEY` | OpenAI API 密钥 | - | 使用 OpenAI 时必需 |
-| `VITE_OPENAI_DEFAULT_MODEL` | OpenAI 默认模型 | `gpt-3.5-turbo` | 否 |
+| `VITE_OPENAI_DEFAULT_MODEL` | OpenAI 默认模型 | `gpt-5` | 否 |
 
 ### Provider 配置
 
@@ -239,6 +248,131 @@ pnpm build
 
 在部署平台设置相应的环境变量，确保应用能正确连接到 AI 服务。
 
+## 🔧 项目架构
+
+### 核心设计理念
+
+本项目采用现代化的前后端分离架构，具有以下特点：
+
+- **模块化设计**: 前端采用Hook-based架构，后端采用微服务理念
+- **可扩展性**: 支持多种AI服务提供商，易于添加新的Provider
+- **类型安全**: 全面使用TypeScript，确保代码质量和开发效率
+- **响应式设计**: 适配多种设备，提供一致的用户体验
+
+### 技术选型理由
+
+- **React 19.1.1**: 最新的React版本，支持并发特性和性能优化
+- **TypeScript**: 提供强类型支持，减少运行时错误
+- **Vite**: 快速的构建工具，开发体验优秀
+- **Tailwind CSS**: 实用优先的CSS框架，快速开发现代UI
+- **FastAPI**: 高性能的Python Web框架，自动生成API文档
+
+### 核心架构设计
+
+#### 双情感分析系统
+- **useChat中的情感分析**: 用于智能模式下的实时情感检测和模式推荐
+- **useEmotionAnalysis**: 用于情感历史追踪、趋势分析和统计
+- **Provider共享机制**: 两个系统共享同一个Provider实例，确保配置一致性
+
+#### Hook-based状态管理
+- **useApp**: 主应用状态管理，整合所有子系统
+- **useProvider**: Provider管理，支持多Provider切换
+- **useChat**: 聊天功能，支持流式响应和历史管理
+- **useEmotionAnalysis**: 情感分析和历史追踪
+
+#### Provider模式设计
+- **BaseProvider**: 抽象基类，定义通用接口
+- **具体实现**: OllamaProvider、OpenAIProvider等
+- **统一接口**: 屏蔽不同AI服务的差异
+
+### 已完成的核心功能
+
+#### ✅ 情感分析系统优化
+- EmotionAnalysisService 独立化，支持fallback机制
+- 双情感分析系统架构，职责清晰分离
+- 详细的调试日志和错误处理
+
+#### ✅ Provider管理系统增强
+- 多Provider支持（Ollama、OpenAI）
+- 动态Provider切换和模型管理
+- 统一的Provider接口设计
+
+#### ✅ 设置面板系统
+- 完整的设置界面，支持API配置、模型管理、数据管理
+- 分标签页界面，实时状态显示
+- 用户体验优化，错误提示和成功反馈
+
+#### ✅ 类型系统完善
+- 增强的ModelInfo接口和Provider类型定义
+- Hook返回类型规范化
+- TypeScript严格模式支持
+
+#### ✅ 架构优化
+- 依赖解耦，各Hook独立管理服务实例
+- 状态同步机制，Provider实例在多系统间共享
+- 调试和开发工具支持
+
+## 🛠️ 开发指南扩展
+
+### 扩展开发指南
+
+#### 1. 添加新的AI Provider
+
+1. 继承`BaseProvider`类
+```typescript
+export class CustomProvider extends BaseProvider {
+  async testConnection() {
+    // 实现连接测试
+  }
+  
+  async listModels() {
+    // 实现模型列表获取
+  }
+  
+  async sendMessage(request: ChatRequest) {
+    // 实现消息发送
+  }
+}
+```
+
+2. 在`useProvider.ts`中注册
+3. 更新`ProviderType`类型定义
+4. 在设置面板中添加配置项
+
+#### 2. 扩展情感分析
+
+1. 修改`EmotionAnalysis`接口
+2. 更新`EmotionAnalysisService`处理逻辑
+3. 调整`useEmotionAnalysis`统计计算
+4. 更新UI显示组件
+
+#### 3. 添加新设置项
+
+1. 更新`AppSettings`接口
+2. 在`useApp.ts`中添加处理逻辑
+3. 在`SettingsModal.tsx`中添加UI
+4. 更新存储和导入导出逻辑
+
+### 开发最佳实践
+
+#### 1. 代码组织
+- 保持Hook职责单一，避免过度耦合
+- 使用TypeScript严格类型检查，避免使用`any`
+- 遵循React Hooks最佳实践
+- 保持组件粒度适中
+
+#### 2. 错误处理
+- 总是提供fallback机制，确保服务稳定性
+- 记录详细的错误日志，便于调试
+- 为用户提供有意义的错误信息
+- 实现优雅的错误恢复
+
+#### 3. 性能考虑
+- 避免不必要的re-render，使用`React.memo`优化组件
+- 合理使用`useCallback`和`useMemo`
+- 控制聊天历史长度，避免内存泄漏
+- 监控组件性能指标
+
 ## 🐛 故障排除
 
 ### 常见问题
@@ -298,11 +432,53 @@ MIT License
 
 欢迎提交 Issue 和 Pull Request！
 
+## 📈 项目状态
+
+### 当前版本
+- **前端版本**: v0.2.0
+- **后端版本**: v2.0.0
+- **最后更新**: 2025年8月
+
+### 开发状态
+- ✅ 核心功能完成
+- ✅ 情感分析系统
+- ✅ 多Provider支持
+- ✅ 响应多样性
+- 🚧 高级功能开发中
+- 🚧 性能优化进行中
+
+### 版本规划
+- **v0.3.0**: 增强UI/UX，添加更多AI Provider（Anthropic、Google Gemini）
+- **v0.4.0**: 情感分析可视化，高级统计功能，模型性能指标
+- **v0.5.0**: 高级聊天功能（主题标签、全文搜索、对话模板）
+- **v1.0.0**: 正式版本，完整功能集，生产环境优化
+
+### 开发路线图
+
+#### 近期计划 (优先级: 高)
+- 模型加载进度指示器和性能优化
+- 网络连接失败重试机制
+- 用户友好的错误提示信息
+- 模型搜索和过滤功能
+
+#### 中期计划 (优先级: 中)
+- 情感分析准确率统计和可视化图表
+- 模型性能指标显示和分组管理
+- Provider性能对比功能
+- 数据导出格式优化（CSV、Excel）
+
+#### 长期计划 (优先级: 低)
+- 云端数据同步和多用户配置管理
+- 个性化设置和用户偏好学习
+- 协作和分享功能
+
 ## 📞 联系方式
 
 如有问题或建议，请通过以下方式联系：
-- GitHub Issues
-- 邮箱：[your-email@example.com]
+- **GitHub Issues**: https://github.com/hexart/praise-ai/issues
+- **项目主页**: https://github.com/hexart/praise-ai
+- **邮箱**: your-email@example.com
+- **文档**: 查看 [PROJECT_DOCUMENTATION.md](./docs/PROJECT_DOCUMENTATION.md) 获取详细文档
 
 ---
 
