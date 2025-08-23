@@ -47,9 +47,9 @@
 
 本项目提供了完整的文档体系，涵盖用户使用、开发指南和API参考：
 
-- **[PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md)** - 完整项目文档，包含详细的架构说明、部署指南和故障排除
-- **[DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - 开发者指南，包含扩展开发、测试和最佳实践
-- **[API_REFERENCE.md](./API_REFERENCE.md)** - API参考文档，详细的接口说明和使用示例
+- **[PROJECT_DOCUMENTATION.md](./docs/PROJECT_DOCUMENTATION.md)** - 完整项目文档，包含详细的架构说明、部署指南和故障排除
+- **[DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md)** - 开发者指南，包含扩展开发、测试和最佳实践
+- **[API_REFERENCE.md](./docs/API_REFERENCE.md)** - API参考文档，详细的接口说明和使用示例
 - **[backend/README.md](./backend/README.md)** - 后端代理服务详细说明
 
 ## 🚀 快速开始
