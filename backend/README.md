@@ -7,6 +7,7 @@
 ### 主要特性
 
 - ✅ **完全兼容 OpenAI API 格式** - 支持 `/v1/models`、`/v1/chat/completions` 等标准端点
+- ✅ **多路径支持** - 同时支持 `/v1/` 和无前缀的 API 路径
 - ✅ **流式响应支持** - 支持 Server-Sent Events (SSE) 格式的流式输出
 - ✅ **自动格式转换** - 自动将 Ollama 格式转换为 OpenAI 格式
 - ✅ **零配置** - 开箱即用，无需复杂配置
@@ -41,14 +42,35 @@ ollama pull codellama
 ollama serve
 ```
 
-### 安装代理服务
+### 创建虚拟环境
 
-1. **安装依赖**
+1. **创建虚拟环境**
 ```bash
-pip install fastapi uvicorn httpx pydantic
+python -m venv ollama-proxy-env
 ```
 
-2. **运行代理服务**
+2. **激活虚拟环境**
+```bash
+# Windows
+ollama-proxy-env\Scripts\activate
+
+# macOS/Linux
+source ollama-proxy-env/bin/activate
+```
+
+**注意**：激活虚拟环境后，命令行提示符前会显示 `(ollama-proxy-env)`，表示虚拟环境已成功激活。
+
+### 安装代理服务
+
+1. **下载项目文件**
+   - 下载 `main.py` 和 `requirements.txt` 到同一目录
+
+2. **安装依赖**
+```bash
+pip install -r requirements.txt
+```
+
+3. **运行代理服务**
 ```bash
 python main.py
 # 服务将在 http://localhost:8000 启动
@@ -56,11 +78,17 @@ python main.py
 
 ## API 端点
 
+**注意**：所有 API 端点都支持两种路径格式：
+- 带 `/v1/` 前缀：`/v1/models`、`/v1/chat/completions`、`/v1/completions`
+- 不带前缀：`/models`、`/chat/completions`、`/completions`
+
 ### 1. 获取模型列表
 
 **请求**
 ```http
 GET /v1/models
+# 或
+GET /models
 ```
 
 **响应示例**
@@ -89,6 +117,8 @@ GET /v1/models
 **请求**
 ```http
 POST /v1/chat/completions
+# 或
+POST /chat/completions
 Content-Type: application/json
 
 {
@@ -133,6 +163,8 @@ Content-Type: application/json
 **请求**
 ```http
 POST /v1/chat/completions
+# 或
+POST /chat/completions
 Content-Type: application/json
 
 {
@@ -164,6 +196,8 @@ data: [DONE]
 **请求**
 ```http
 POST /v1/completions
+# 或
+POST /completions
 Content-Type: application/json
 
 {
@@ -182,12 +216,21 @@ Content-Type: application/json
 GET /health
 ```
 
-**响应示例**
+**响应示例（Ollama 正常）**
 ```json
 {
   "status": "healthy",
   "ollama": "connected",
   "api": "openai-compatible"
+}
+```
+
+**响应示例（Ollama 不可用）**
+```json
+{
+  "status": "unhealthy",
+  "ollama": "disconnected",
+  "error": "具体错误信息"
 }
 ```
 
