@@ -4,16 +4,30 @@ import {
   normalizeEmotion,
   type StandardEmotionType
 } from '../types/emotion';
+import type { BaseProvider } from '../providers/BaseProvider';
+import type { EmotionAnalysis } from '../types/emotion';
+import {
+  removeThinkTags,
+  extractJSON
+} from '../utils/textUtils';
+import { createModuleLogger } from '../utils/logger';
 
 interface Quote {
   content: string;
   author?: string;
   category: 'comfort' | 'praise' | 'mixed';
 }
+
 interface QuoteUsageHistory {
   quote: string;
   timestamp: number;
   userId: string;
+}
+
+interface LLMQuoteResponse {
+  quote: string;
+  author: string;
+  relevance_reasoning: string;
 }
 
 /**
@@ -21,6 +35,8 @@ interface QuoteUsageHistory {
 管理名言警句，提供智能引用选择
 */
 export class QuoteService {
+  private provider: BaseProvider | null = null;
+  private readonly logger = createModuleLogger('QuoteService');
   private readonly quotes: Quote[] = [
     // 安慰类引用
     {
@@ -123,21 +139,220 @@ export class QuoteService {
     }
   ];
 
-  private readonly storageKey = 'quote_usage_history';
+  /**
+   * 设置LLM Provider
+   */
+  setProvider(provider: BaseProvider | null) {
+    this.provider = provider;
+  }
 
   /**
-  根据情感类型获取合适的引用
-  */
-  getRelevantQuote(
-    emotionTypeOrCategory: StandardEmotionType | 'comfort' | 'praise' | 'mixed' | string,
+   * 根据情感和上下文智能获取引用
+   */
+  async getIntelligentQuote(
+    emotionAnalysis: EmotionAnalysis,
+    userMessage: string,
+    chatContext: string,
     userId: string,
     probability: number = 0.25
-  ): string | null {
+  ): Promise<string | null> {
     // 按概率决定是否返回引用
     if (Math.random() > probability) {
       return null;
     }
 
+    // 优先使用大模型生成引用
+    if (this.provider && this.provider.getCurrentModel()) {
+      try {
+        const aiQuote = await this.generateQuoteWithLLM(
+          emotionAnalysis,
+          userMessage,
+          chatContext,
+          userId
+        );
+        
+        if (aiQuote) {
+          this.logger.info('AI引用生成成功', { 
+            quoteLength: aiQuote.length,
+            emotion: emotionAnalysis.primary_emotion
+          });
+          this.markAsUsed(aiQuote, userId);
+          return aiQuote;
+        }
+      } catch (error) {
+        this.logger.warn('AI引用生成失败，使用fallback', { 
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+
+    // Fallback到硬编码引用库
+    return this.getFallbackQuote(emotionAnalysis.primary_emotion, userId);
+  }
+
+  /**
+   * 使用大模型生成贴合情景的引用
+   */
+  private async generateQuoteWithLLM(
+    emotionAnalysis: EmotionAnalysis,
+    userMessage: string,
+    chatContext: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _userId: string
+  ): Promise<string | null> {
+    const prompt = this.buildQuoteGenerationPrompt(
+      emotionAnalysis,
+      userMessage,
+      chatContext
+    );
+    const systemPrompt = '你是一个智能引用推荐专家。根据用户情感和对话情景，选择最贴合的名言警句。';
+
+    try {
+      // 记录完整的提示词
+      this.logger.info('🔥 [LLM交互3] 引用生成 - 发送提示词', {
+        systemPrompt,
+        userPrompt: prompt,
+        emotionContext: {
+          emotion: emotionAnalysis.primary_emotion,
+          intensity: emotionAnalysis.intensity,
+          needs: emotionAnalysis.needs
+        },
+        userMessage: userMessage.substring(0, 100),
+        contextLength: chatContext.length
+      });
+
+      const response = await this.provider!.sendMessage({
+        message: prompt,
+        mode: 'smart',
+        userId: 'quote_generation',
+        chatHistory: [],
+        systemPrompt
+      });
+
+      if (response.success && response.data?.content) {
+        // 记录完整的LLM响应
+        this.logger.info('🔥 [LLM交互3] 引用生成 - 接收响应', {
+          fullResponse: response.data.content,
+          responseLength: response.data.content.length,
+          model: response.data.model || '未知模型'
+        });
+        
+        const quote = this.parseQuoteResponse(response.data.content);
+        if (quote) {
+          this.logger.info('AI引用生成成功', { quote: quote.substring(0, 100) });
+        } else {
+          this.logger.warn('AI引用生成失败，使用fallback');
+        }
+        return quote;
+      }
+      
+      return null;
+      
+    } catch (error) {
+      this.logger.error('引用生成错误', { error: error instanceof Error ? error.message : String(error) });
+      return null;
+    }
+  }
+
+  /**
+   * 构建引用生成提示词
+   */
+  private buildQuoteGenerationPrompt(
+    emotionAnalysis: EmotionAnalysis,
+    userMessage: string,
+    chatContext: string
+  ): string {
+    const emotionDesc = this.getEmotionDescription(emotionAnalysis);
+    const categoryDesc = this.getCategoryDescription(emotionAnalysis.primary_emotion);
+    
+    return `请为以下情况推荐一句最贴合的名言警句：
+
+用户消息："${userMessage}"
+对话背景：${chatContext || '无特殊背景'}
+用户情感：${emotionDesc}
+需要的支持类型：${categoryDesc}
+
+要求：
+1. 选择真实存在的名言警句（来自知名作家、哲学家、名人等）
+2. 引用要与用户当前的情感状态和情景高度贴合
+3. 语言要温暖、有启发性，能够提供情感支持
+4. 优先选择中文名言或中文翻译的经典引用
+5. 避免过于说教或空洞的话语
+
+请返回JSON格式：
+{
+  "quote": "完整的引用内容",
+  "author": "作者姓名",
+  "relevance_reasoning": "为什么这句话适合当前情景的简短说明"
+}`;
+  }
+
+  /**
+   * 获取情感描述
+   */
+  private getEmotionDescription(emotionAnalysis: EmotionAnalysis): string {
+    const intensity = emotionAnalysis.intensity;
+    let intensityDesc = '';
+    if (intensity > 0.8) intensityDesc = '非常强烈';
+    else if (intensity > 0.6) intensityDesc = '比较明显';
+    else if (intensity > 0.4) intensityDesc = '中等程度';
+    else intensityDesc = '轻微';
+
+    return `${emotionAnalysis.primary_emotion}（${intensityDesc}）`;
+  }
+
+  /**
+   * 获取类别描述
+   */
+  private getCategoryDescription(emotion: string): string {
+    const category = getEmotionCategory(normalizeEmotion(emotion));
+    
+    switch (category) {
+      case 'negative':
+        return '需要安慰和支持，帮助走出低谷';
+      case 'positive':
+        return '分享喜悦，延续美好感受';
+      case 'neutral':
+      default:
+        return '提供智慧启发，引导思考';
+    }
+  }
+
+  /**
+   * 解析LLM响应中的引用
+   */
+  private parseQuoteResponse(content: string): string | null {
+    try {
+      // 移除思考标签
+      const cleanContent = removeThinkTags(content);
+      
+      // 提取JSON
+      const jsonString = extractJSON(cleanContent);
+      if (!jsonString) {
+        throw new Error('No JSON found');
+      }
+      
+      const parsed: LLMQuoteResponse = JSON.parse(jsonString);
+      
+      if (parsed.quote && parsed.author) {
+        return `${parsed.author}说："${parsed.quote}"`;
+      }
+      
+      return null;
+      
+    } catch (error) {
+      this.logger.error('解析引用响应失败', { error: error instanceof Error ? error.message : String(error) });
+      return null;
+    }
+  }
+
+  /**
+   * Fallback到硬编码引用库
+   */
+  private getFallbackQuote(
+    emotionTypeOrCategory: StandardEmotionType | 'comfort' | 'praise' | 'mixed' | string,
+    userId: string
+  ): string | null {
     // 确定引用类别
     let quoteCategory: 'comfort' | 'praise' | 'mixed';
 
@@ -150,13 +365,12 @@ export class QuoteService {
       // 根据情感类型决定类别
       quoteCategory = this.determineQuoteCategory(emotionTypeOrCategory);
     }
-
+    
     const usageHistory = this.getUsageHistory(userId);
+    
     let quotePool: Quote[] = [];
-
-    // 根据情感类型选择引用池
     if (quoteCategory === 'mixed') {
-      quotePool = [...this.quotes]; // 混合模式可以使用所有引用
+      quotePool = [...this.quotes];
     } else {
       quotePool = this.quotes.filter(quote => quote.category === quoteCategory);
     }
@@ -172,7 +386,6 @@ export class QuoteService {
       return this.selectRandomQuote(quotePool);
     }
 
-    // 选择随机引用
     const selectedQuote = this.selectRandomQuote(availableQuotes);
     if (selectedQuote) {
       this.markAsUsed(selectedQuote, userId);
@@ -181,6 +394,22 @@ export class QuoteService {
 
     return null;
   }
+
+  private readonly storageKey = 'quote_usage_history';
+
+  /**
+   * 原有的引用获取方法（兼容性接口）
+   */
+  getRelevantQuote(
+    emotionTypeOrCategory: StandardEmotionType | 'comfort' | 'praise' | 'mixed' | string,
+    userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _probability: number = 0.25
+  ): string | null {
+    return this.getFallbackQuote(emotionTypeOrCategory, userId);
+  }
+
+  // ... existing code ...
 
   /**
    * 根据情感类型决定引用类别

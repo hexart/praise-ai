@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Server, Sparkles, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw, Cpu } from 'lucide-react';
 import { Button } from '../ui/Button';
-
+import { createModuleLogger } from '../../utils/logger';
 import type { ProviderType, ProviderConfig, ModelInfo } from '../../types/provider';
 
 interface ProviderSettingsProps {
@@ -39,6 +39,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   onLoadModels,
   isLoading = false
 }) => {
+  const logger = createModuleLogger('ProviderSettings');
   const [showApiKey, setShowApiKey] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [testMessage, setTestMessage] = useState('');
@@ -97,7 +98,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     if (success) {
       setTestStatus('success'); // 设置为成功状态，触发useEffect加载模型
       setTestMessage('切换成功！');
-      console.log(`[ProviderSettings] Successfully switched to ${providerType}`);
+      logger.info('Provider切换成功', { provider: providerType });
     } else {
       setTestStatus('error');
       setTestMessage('切换失败，请检查配置');
@@ -141,10 +142,10 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     try {
       const success = await onModelSwitch(modelId);
       if (!success) {
-        console.error('模型切换失败');
+        logger.error('模型切换失败');
       }
     } catch (error) {
-      console.error('模型切换失败：', error);
+      logger.error('模型切换失败：', error);
     } finally {
       setModelSwitching(false);
     }
@@ -154,11 +155,11 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   const handleLoadModels = async () => {
     if (modelsLoading) return;
     
-    console.log('[ProviderSettings] Loading models...');
+    logger.info('[ProviderSettings] Loading models...');
     setModelsLoading(true);
     try {
       await onLoadModels();
-      console.log('[ProviderSettings] Models loaded successfully');
+      logger.info('[ProviderSettings] Models loaded successfully');
       
       // 自动选择模型：优先选择默认模型，如果不存在则选择第一个可用模型
       if (models.length > 0 && !currentModel) {
@@ -168,12 +169,12 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
         // 1. 优先使用配置的默认模型（如果存在）
         if (defaultModel && models.some(m => m.id === defaultModel)) {
           targetModel = defaultModel;
-          console.log('[ProviderSettings] Auto-selecting default model:', defaultModel);
+          logger.info('[ProviderSettings] Auto-selecting default model:', defaultModel);
         }
         // 2. 如果默认模型不存在，使用第一个可用模型
         else if (models.length > 0) {
           targetModel = models[0].id;
-          console.log('[ProviderSettings] Auto-selecting first available model:', targetModel);
+          logger.info('[ProviderSettings] Auto-selecting first available model:', targetModel);
         }
         
         // 执行模型切换
@@ -181,17 +182,20 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
           try {
             const success = await onModelSwitch(targetModel);
             if (success) {
-              console.log('[ProviderSettings] Successfully auto-selected model:', targetModel);
+              logger.info('自动选择模型成功', { model: targetModel });
             } else {
-              console.warn('[ProviderSettings] Failed to auto-select model:', targetModel);
+              logger.warn('自动选择模型失败', { model: targetModel });
             }
           } catch (error) {
-            console.error('[ProviderSettings] Error auto-selecting model:', error);
+            logger.error('自动选择模型时发生错误', { 
+              model: targetModel,
+              error: error instanceof Error ? error.message : String(error)
+            });
           }
         }
       }
     } catch (error) {
-      console.error('[ProviderSettings] Failed to load models:', error);
+      logger.error('加载模型失败', { error: error instanceof Error ? error.message : String(error) });
     } finally {
       setModelsLoading(false);
     }

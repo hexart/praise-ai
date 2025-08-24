@@ -4,6 +4,7 @@ import { useChat } from './useChat';
 import { useEmotionAnalysis } from './useEmotionAnalysis';
 import type { ChatMode } from '../types/chat';
 import { getFromStorage, saveToStorage } from '../utils/storage';
+import { logger } from '../utils/logger';
 
 interface AppSettings {
   debugMode: boolean;
@@ -92,10 +93,10 @@ export function useApp(): UseAppReturn {
       // 确保情感分析服务的Provider也设置了正确的模型
       provider.provider.switchModel(provider.currentModel);
 
-      console.log('[useApp] Synced emotion service provider and model:', provider.currentModel);
+      logger.info('Synced emotion service provider and model', { model: provider.currentModel });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [provider.provider, provider.currentModel, emotion.getEmotionService]);
+  }, [provider.provider, provider.currentModel]);
 
   // 应用是否准备就绪
   const isReady = useMemo(() => {
@@ -128,12 +129,12 @@ export function useApp(): UseAppReturn {
         // 清除错误状态
         setError(null);
 
-        console.log('[useApp] All data has been reset');
+        logger.info('useApp', 'All data has been reset');
 
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to reset data';
         setError(errorMessage);
-        console.error('[useApp] Failed to reset data:', err);
+        logger.error('Failed to reset data: ' + (err instanceof Error ? err.message : String(err)));
       }
     }
   }, [chat, emotion]);
@@ -156,7 +157,7 @@ export function useApp(): UseAppReturn {
       return JSON.stringify(exportData, null, 2);
 
     } catch (err) {
-      console.error('[useApp] Failed to export data:', err);
+      logger.error('Failed to export data: ' + (err instanceof Error ? err.message : String(err)));
       throw new Error('导出数据失败');
     }
   }, [userId, settings, chat.chatHistory, emotion.analysisHistory, provider.providerType, provider.config]);
@@ -178,11 +179,11 @@ export function useApp(): UseAppReturn {
       // 导入聊天记录（这里需要重新设置状态，因为useChat没有直接的导入方法）
       // 注意：这里简化处理，实际应用中可能需要更复杂的导入逻辑
 
-      console.log('[useApp] Data imported successfully');
+      logger.info('useApp', 'Data imported successfully');
       return true;
 
     } catch (err) {
-      console.error('[useApp] Failed to import data:', err);
+      logger.error('Failed to import data: ' + (err instanceof Error ? err.message : String(err)));
       setError('导入数据失败：格式不正确或数据损坏');
       return false;
     }
@@ -210,40 +211,35 @@ export function useApp(): UseAppReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.chatHistory, emotion.analyzeEmotionTrend]);
 
-  // 开发环境下的调试日志
+  // 开发环境下的调试日志（精简版）
   useEffect(() => {
     if (settings.debugMode) {
-      console.log('[useApp] Debug mode enabled');
-      console.log('Provider state:', {
-        type: provider.providerType,
-        hasProvider: !!provider.provider,
-        currentModel: provider.currentModel,
-        modelCount: provider.models.length
+      logger.setEnabled(true);
+      console.log('[SystemState]', {
+        provider: {
+          type: provider.providerType,
+          hasProvider: !!provider.provider,
+          currentModel: provider.currentModel,
+          modelCount: provider.models.length
+        },
+        chat: {
+          messageCount: chat.chatHistory.length,
+          isLoading: chat.isLoading,
+          streamingId: chat.streamingMessageId
+        },
+        emotion: {
+          currentEmotion: emotion.currentAnalysis?.primary_emotion,
+          analysisCount: emotion.analysisHistory.length,
+          trend: emotion.emotionTrend?.trend
+        }
       });
-      console.log('Chat state:', {
-        messageCount: chat.chatHistory.length,
-        isLoading: chat.isLoading,
-        streamingId: chat.streamingMessageId
-      });
-      console.log('Emotion state:', {
-        currentEmotion: emotion.currentAnalysis?.primary_emotion,
-        analysisCount: emotion.analysisHistory.length,
-        trend: emotion.emotionTrend?.trend
-      });
+    } else {
+      logger.setEnabled(false);
     }
-  }, [
-    settings.debugMode,
-    provider.providerType,
-    provider.provider,
-    provider.currentModel,
-    provider.models.length,
-    chat.chatHistory.length,
-    chat.isLoading,
-    chat.streamingMessageId,
-    emotion.currentAnalysis,
-    emotion.analysisHistory.length,
-    emotion.emotionTrend
-  ]);
+    // 只监听debugMode变化，避免频繁触发
+    // 忽略ESLint警告，因为我们只想在debugMode改变时执行，而不是在状态变化时
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.debugMode]);
   return {
     // Provider相关
     provider,

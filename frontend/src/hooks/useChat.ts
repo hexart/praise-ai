@@ -1,11 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { ChatMessage, ChatMode } from '../types/chat';
+import type { EmotionAnalysis } from '../types/emotion';
 import type { BaseProvider } from '../providers/BaseProvider';
 import { EmotionAnalysisService } from '../services/EmotionAnalysisService';
 import { PromptService } from '../services/PromptService';
 import { ResponseDiversityService } from '../services/ResponseDiversityService';
 import { getFromStorage, saveToStorage } from '../utils/storage';
 import { formatError } from '../utils/formatters';
+import { logger, createModuleLogger } from '../utils/logger';
 
 interface UseChatOptions {
   provider: BaseProvider | null;
@@ -31,6 +33,7 @@ interface UseChatReturn {
 }
 
 const STORAGE_KEY = 'chat_history';
+const chatLogger = createModuleLogger('useChat');
 
 /**
 聊天功能Hook
@@ -64,9 +67,10 @@ export function useChat({
   useEffect(() => {
     if (provider && currentModel) {
       emotionService.current.setProvider(provider);
+      promptService.current.setProvider(provider);
       // 确保情感分析的Provider实例也有正确的模型
       provider.switchModel(currentModel);
-      console.log('[useChat] Synced emotion service model:', currentModel);
+      chatLogger.info('Synced emotion service model', { model: currentModel });
     }
   }, [provider, currentModel]);
 
@@ -115,35 +119,35 @@ export function useChat({
   // 发送消息
   const sendMessage = useCallback(async (message: string, mode: ChatMode) => {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    console.log('[useChat] Starting message send:', message, 'ID:', requestId);
+    chatLogger.info('开始发送消息', { message: message.substring(0, 50), requestId });
 
     // 检查是否已有相同请求在处理
     if (currentRequestId.current) {
-      console.log('[useChat] Request already in progress:', currentRequestId.current);
+      chatLogger.warn('请求已在进行中', { currentRequestId: currentRequestId.current });
       return;
     }
 
     currentRequestId.current = requestId;
 
     if (isLoading) {
-      console.log('[useChat] Message sending in progress, ignoring duplicate call');
-      currentRequestId.current = null; // 添加这行
+      chatLogger.warn('消息发送正在进行，忽略重复调用');
+      currentRequestId.current = null;
       return;
     }
 
     if (!provider || !currentModel) {
-      setError('Provider or model not available');
+      setError('Provider或模型不可用');
       currentRequestId.current = null; // 添加这行
       return;
     }
 
     if (!message.trim()) {
-      setError('Message cannot be empty');
+      setError('消息不能为空');
       currentRequestId.current = null; // 添加这行
       return;
     }
 
-    console.log('[useChat] Starting message send:', message)
+
     setIsLoading(true);
     setError(null);
 
@@ -157,14 +161,17 @@ export function useChat({
       });
 
       // 2. 情感分析（仅对智能模式）
-      let emotionAnalysis;
+      let emotionAnalysis: EmotionAnalysis | undefined;
       let detectedMode = mode;
 
       if (mode === 'smart') {
         emotionAnalysis = await emotionService.current.analyzeEmotion(message);
         detectedMode = emotionService.current.recommendMode(emotionAnalysis);
-        console.log('[useChat] Emotion analysis:', emotionAnalysis);
-        console.log('[useChat] Recommended mode:', detectedMode);
+        logger.info('情感分析完成', {
+          emotion: emotionAnalysis.primary_emotion,
+          intensity: emotionAnalysis.intensity,
+          recommendedMode: detectedMode
+        });
       }
 
       // 3. 构建系统提示词
@@ -175,12 +182,39 @@ export function useChat({
       );
 
       // 4. 构建用户消息（包含上下文和引用）
-      const enhancedUserMessage = promptService.current.buildUserMessage(
+      const enhancedUserMessage = await promptService.current.buildUserMessage(
         message,
         chatHistory,
         emotionAnalysis,
         userId
       );
+
+      // 记录完整的提示词和用户消息
+      chatLogger.info('🔥 [LLM交互2] 聊天回复生成 - 发送提示词', {
+        systemPrompt,
+        userMessage: enhancedUserMessage,
+        mode: detectedMode,
+        hasEmotion: !!emotionAnalysis,
+        emotionContext: emotionAnalysis ? {
+          emotion: emotionAnalysis.primary_emotion,
+          intensity: emotionAnalysis.intensity,
+          needs: emotionAnalysis.needs
+        } : null
+      });
+
+      // 打印完整提示词用于调试
+      logger.info('系统提示词构建完成', { 
+        promptLength: systemPrompt.length,
+        mode: detectedMode,
+        hasEmotion: !!emotionAnalysis
+      });
+
+      // 打印增强后的用户消息用于调试
+      logger.info('用户消息增强完成', {
+        originalLength: message.length,
+        enhancedLength: enhancedUserMessage.length,
+        hasContext: enhancedUserMessage.includes('最近对话')
+      });
 
       // 5. 生成调试信息
       const debugInfo = promptService.current.buildDebugInfo(
@@ -229,12 +263,20 @@ export function useChat({
             isComplete = true;
             setStreamingMessageId(null);
 
+            // 记录完整的LLM响应
+            chatLogger.info('🔥 [LLM交互2] 聊天回复生成 - 接收响应', {
+              fullResponse: accumulatedContent,
+              responseLength: accumulatedContent.length,
+              mode: detectedMode,
+              hasEmotion: !!emotionAnalysis
+            });
+
             // 分析并存储回复多样性
             if (accumulatedContent) {
               diversityService.current.analyzeAndStore(accumulatedContent, userId);
             }
 
-            console.log(`[useChat] Streaming completed, total length: ${accumulatedContent.length}`);
+            chatLogger.info('流式传输完成', { totalLength: accumulatedContent.length });
           }
         },
         // onMetadata callback
@@ -244,19 +286,23 @@ export function useChat({
               emotionAnalysis: metadata.emotion_analysis as Record<string, unknown>
             });
           }
-          console.log('[useChat] Received metadata:', metadata);
+          chatLogger.debug('接收到元数据', { 
+            hasEmotion: !!metadata.emotion_analysis, 
+            model: metadata.model,
+            finish_reason: metadata.finish_reason 
+          });
         }
       );
 
       // 确保流式传输已完成
       if (!isComplete) {
-        console.warn('[useChat] Stream may not have completed properly');
+        chatLogger.warn('流式传输可能未正常完成');
         updateMessage(aiMessage.id, { isStreaming: false });
         setStreamingMessageId(null);
       }
 
     } catch (err) {
-      console.error('[useChat] Failed to send message:', err);
+      chatLogger.error('发送消息失败', { error: err instanceof Error ? err.message : String(err) });
       const errorMessage = formatError(err);
       setError(errorMessage);
 
@@ -294,7 +340,7 @@ export function useChat({
       saveToStorage(STORAGE_KEY, []);
     }
 
-    console.log('[useChat] Chat history cleared');
+    chatLogger.info('聊天历史已清空');
   }, [autoSave]);
   // 停止当前的流式传输（如果有的话）
   const stopStreaming = useCallback(() => {

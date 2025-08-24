@@ -15,6 +15,7 @@ import {
   removeThinkTags,
   extractJSON
 } from '../utils/textUtils';
+import { createModuleLogger } from '../utils/logger';
 
 interface LLMEmotionResponse {
   primary_emotion: string;
@@ -30,6 +31,7 @@ interface LLMEmotionResponse {
  */
 export class EmotionAnalysisService {
   private provider: BaseProvider | null = null;
+  private readonly logger = createModuleLogger('EmotionAnalysisService');
 
   /**
    * 设置LLM Provider
@@ -48,24 +50,46 @@ export class EmotionAnalysisService {
     }
 
     try {
+      const emotionPrompt = this.buildEmotionAnalysisPrompt(message);
+      const systemPrompt = '你是一个情感分析API。分析用户文本的情感并返回JSON格式结果。';
+      
+      // 记录完整的提示词
+      this.logger.info('🔥 [LLM交互1] 情感分析 - 发送提示词', {
+        systemPrompt,
+        userPrompt: emotionPrompt,
+        originalMessage: message
+      });
+
       const response = await this.provider.sendMessage({
-        message: this.buildEmotionAnalysisPrompt(message),
+        message: emotionPrompt,
         mode: 'smart',
         userId: 'emotion_analysis',
         chatHistory: [],
-        systemPrompt: '你是一个情感分析API。分析用户文本的情感并返回JSON格式结果。'
+        systemPrompt
       });
 
       if (response.success && response.data?.content) {
+        // 记录完整的LLM响应
+        this.logger.info('🔥 [LLM交互1] 情感分析 - 接收响应', {
+          fullResponse: response.data.content,
+          responseLength: response.data.content.length,
+          model: response.data.model || '未知模型'
+        });
+        
         const analysis = this.parseEmotionResponse(response.data.content);
-        console.log('[EmotionAnalysis] Analysis result:', analysis);
+        this.logger.info('情感分析完成', {
+          emotion: analysis.primary_emotion,
+          intensity: analysis.intensity,
+          confidence: analysis.confidence,
+          source: analysis.analysis_source
+        });
         return analysis;
       }
       
       return this.getFallbackAnalysis(message);
       
     } catch (error) {
-      console.error('[EmotionAnalysis] Analysis error:', error);
+      this.logger.error('情感分析失败', { error: error instanceof Error ? error.message : String(error) });
       return this.getFallbackAnalysis(message);
     }
   }
@@ -98,7 +122,10 @@ export class EmotionAnalysisService {
     try {
       // 移除思考标签
       const cleanContent = removeThinkTags(content);
-      console.info('LLM Response:', cleanContent);
+      this.logger.debug('处理LLM响应', { 
+        originalLength: content.length,
+        cleanLength: cleanContent.length
+      });
       
       // 提取JSON
       const jsonString = extractJSON(cleanContent);
@@ -119,7 +146,7 @@ export class EmotionAnalysisService {
       };
       
     } catch (error) {
-      console.error('[EmotionAnalysis] Analysis error:', error);
+      this.logger.error('解析情感响应失败', { error: error instanceof Error ? error.message : String(error) });
       // 解析失败，使用fallback
       return this.getFallbackAnalysis(content);
     }

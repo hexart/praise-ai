@@ -9,11 +9,13 @@ import type {
   MetadataCallback
 } from '../types/provider';
 import type { ChatRequest, ChatResponse } from '../types/chat';
+import { createModuleLogger } from '../utils/logger';
 
 /**
  * Ollama Provider - 与 OpenAI 兼容的后端 API 代理通信
  */
 export class OllamaProvider extends BaseProvider {
+  private readonly logger = createModuleLogger('OllamaProvider');
   constructor(config: ProviderConfig) {
     super(config);
   }
@@ -177,7 +179,7 @@ export class OllamaProvider extends BaseProvider {
             }
           }
         } catch (parseError) {
-          console.warn('Failed to parse stream chunk:', line, parseError);
+          this.logger.warn('Failed to parse stream chunk:', { line, error: parseError });
           // 如果是错误，直接抛出
           if (line.includes('error')) {
             throw parseError;
@@ -301,13 +303,15 @@ export class OllamaProvider extends BaseProvider {
     onChunk: StreamCallback,
     onMetadata?: MetadataCallback
   ): Promise<void> {
-    console.log('[OllamaProvider] sendStreamMessage - currentModel:', this.currentModel);
-    console.log('[OllamaProvider] sendStreamMessage - config.defaultModel:', this.config.defaultModel);
+    this.logger.debug('发送流式消息', {
+      model: this.currentModel || this.config.defaultModel,
+      messageLength: request.message.length
+    });
 
     if (!this.currentModel) {
       // 尝试使用默认模型
       this.currentModel = this.config.defaultModel || null;
-      console.log('[OllamaProvider] Auto-set currentModel to:', this.currentModel);
+      this.logger.info('自动设置当前模型', { model: this.currentModel });
     }
 
     if (!this.currentModel) {
