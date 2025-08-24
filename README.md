@@ -56,6 +56,16 @@
 
 ## 🚀 快速开始
 
+### 在线体验
+
+项目已部署到 GitHub Pages，您可以直接访问：
+
+🌐 **[https://hexart.github.io/praise-ai](https://hexart.github.io/praise-ai)**
+
+> **注意**：在线版本需要您自己配置 AI 服务提供商的 API 密钥。建议使用本地部署以获得更好的隐私保护。
+
+### 本地部署
+
 ### 1. 克隆项目
 
 ```bash
@@ -303,6 +313,39 @@ pnpm build
 - Netlify  
 - GitHub Pages
 - 任何支持静态文件的服务器
+
+#### GitHub Pages 自动部署
+
+项目已配置 GitHub Actions 工作流，支持自动构建和部署到 GitHub Pages：
+
+**配置步骤：**
+
+1. **启用 GitHub Pages**
+   - 进入项目的 GitHub 仓库页面
+   - 点击 `Settings` → `Pages`
+   - 在 `Source` 下选择 `GitHub Actions`
+
+2. **推送代码触发部署**
+   ```bash
+   git add .
+   git commit -m "feat: 启用 GitHub Pages 自动部署"
+   git push origin main
+   ```
+
+3. **查看部署状态**
+   - 进入 `Actions` 标签页查看工作流运行状态
+   - 部署成功后，应用将可通过 `https://[username].github.io/praise-ai` 访问
+
+**工作流特性：**
+- ✅ 自动触发：每次推送到 `main` 分支时自动构建部署
+- ✅ 缓存优化：使用 pnpm 缓存提升构建速度
+- ✅ 构建验证：确保代码编译无错误后才部署
+- ✅ 环境隔离：生产环境自动配置正确的基础路径
+
+**注意事项：**
+- 部署的应用不包含后端代理服务，您需要直接配置 AI 服务商的 API
+- 生产环境会自动设置 `base: '/praise-ai/'` 路径
+- API 密钥等敏感信息不会包含在构建文件中，需在客户端设置
 
 ### 环境变量配置
 
