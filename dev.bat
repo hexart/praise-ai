@@ -28,7 +28,7 @@ if not exist "venv" (
     exit /b 1
 )
 
-REM 在新窗口中启动Flask
+REM 在新窗口中启动FastAPI
 start "Praise AI Backend" cmd /k "venv\Scripts\activate && python main.py"
 cd ..
 

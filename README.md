@@ -36,6 +36,7 @@
 - **构建工具**：Vite 7.1.3
 - **样式方案**：Tailwind CSS 4.1.12
 - **图标库**：Lucide React 0.541.0
+- **后端框架**：FastAPI + Python
 - **包管理器**：PNPM 10.15.0
 
 ## 📋 系统要求
@@ -123,7 +124,7 @@ dev.bat
 
 开发脚本功能：
 - 🔍 **自动环境检查**：检查虚拟环境和依赖是否存在
-- 📡 **后端启动**：自动激活虚拟环境并启动 Flask 服务
+- 📡 **后端启动**：自动激活虚拟环境并启动 FastAPI 服务
 - 🎨 **前端启动**：自动安装依赖并启动 Vite 开发服务器
 - 🛑 **优雅退出**：按 Ctrl+C 可同时关闭所有服务
 - 📝 **状态提示**：显示服务启动状态和访问地址
@@ -262,7 +263,7 @@ praise-ai/
 │   ├── package.json           # 项目配置
 │   └── README.md              # 项目说明
 ├── backend/                 # 后端项目
-│   ├── main.py             # Flask 代理服务
+│   ├── main.py             # FastAPI 代理服务
 │   ├── requirements.txt    # Python 依赖
 │   └── README.md           # 后端说明
 ├── dev.sh                  # 开发启动脚本 (macOS/Linux)

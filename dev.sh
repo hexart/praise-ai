@@ -23,7 +23,7 @@ start_backend() {
         exit 1
     fi
     
-    # 激活虚拟环境并启动Flask
+    # 激活虚拟环境并启动FastAPI
     source venv/bin/activate && python3 main.py &
     BACKEND_PID=$!
     echo "✅ 后端服务已启动 (PID: $BACKEND_PID)"

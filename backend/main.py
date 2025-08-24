@@ -356,22 +356,6 @@ async def completions(request: CompletionRequest):
 
 
 @app.get("/")
-async def root():
-    """根路径 - API 信息"""
-    return {
-        "name": "Ollama OpenAI Compatible API",
-        "version": "2.0.0",
-        "description": "OpenAI-compatible proxy for Ollama",
-        "endpoints": [
-            "/v1/models",
-            "/v1/chat/completions", 
-            "/v1/completions",
-            "/health"
-        ],
-        "status": "running"
-    }
-
-
 @app.get("/health")
 async def health_check():
     """健康检查"""
