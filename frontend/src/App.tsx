@@ -1,13 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { AppHeader } from './layout/AppHeader';
-import { ChatInterface } from './chat/ChatInterface';
-import { SettingsModal } from './settings/SettingsModal';
-import { ToastContainer } from './ui/Toast';
-import { FullScreenLoading } from './ui/Loading';
-import { useApp } from '../hooks/useApp';
-import { useToast } from '../hooks/useToast';
-import type { ChatMode } from '../types/chat';
-import type { ProviderType, ProviderConfig } from '../types/provider';
+import { AppHeader } from './components/layout/AppHeader';
+import { ChatInterface } from './components/chat/ChatInterface';
+import { SettingsModal } from './components/settings/SettingsModal';
+import { ToastContainer } from './components/ui/Toast';
+import { FullScreenLoading } from './components/ui/Loading';
+import { useApp } from './hooks/useApp';
+import { useToast } from './hooks/useToast';
+import type { ChatMode } from './types/chat';
+import type { ProviderType, ProviderConfig } from './types/provider';
 
 /**
 应用主组件
