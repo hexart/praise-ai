@@ -72,7 +72,7 @@ start_frontend
 
 echo ""
 echo "🎉 开发环境启动完成！"
-echo "📡 后端服务: http://localhost:5000"
+echo "📡 后端服务: http://localhost:8000"
 echo "🎨 前端服务: http://localhost:5173"
 echo ""
 echo "💡 按 Ctrl+C 退出开发环境"

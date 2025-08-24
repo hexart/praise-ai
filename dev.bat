@@ -51,7 +51,7 @@ cd ..
 
 echo.
 echo 🎉 开发环境启动完成！
-echo 📡 后端服务: http://localhost:5000
+echo 📡 后端服务: http://localhost:8000
 echo 🎨 前端服务: http://localhost:5173
 echo.
 echo 💡 关闭各自的命令行窗口可退出对应服务

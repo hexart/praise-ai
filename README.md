@@ -130,7 +130,7 @@ dev.bat
 
 服务地址：
 - 前端服务：`http://localhost:5173`
-- 后端服务：`http://localhost:5000`
+- 后端服务：`http://localhost:8000`
 
 #### 方式二：手动启动
 
