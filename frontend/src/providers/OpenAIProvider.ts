@@ -96,7 +96,7 @@ export class OpenAIProvider extends BaseProvider {
       success: true,
       data: {
         models,
-        currentModel: this.currentModel || this.config.defaultModel
+        currentModel: this.currentModel || undefined
       }
     };
   }
@@ -191,7 +191,7 @@ export class OpenAIProvider extends BaseProvider {
   发送普通消息
   */
   async sendMessage(request: ChatRequest): Promise<APIResponse<ChatResponse>> {
-    const model = this.currentModel || this.config.defaultModel;
+    const model = this.currentModel;
     if (!model) {
       return {
         success: false,
@@ -263,7 +263,7 @@ export class OpenAIProvider extends BaseProvider {
     onChunk: StreamCallback,
     onMetadata?: MetadataCallback
   ): Promise<void> {
-    const model = this.currentModel || this.config.defaultModel;
+    const model = this.currentModel;
     if (!model) {
       throw new Error('No model selected');
     }

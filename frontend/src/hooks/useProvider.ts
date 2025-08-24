@@ -10,10 +10,14 @@ import { getFromStorage, saveToStorage } from '../utils/storage';
 interface ProviderState {
   provider: BaseProvider | null;
   type: ProviderType;
-  isLoading: boolean;
+  isLoading: boolean; // Provider 初始化加载状态
+  isModelLoading: boolean; // 新增：模型列表加载状态
   error: string | null;
   models: ModelInfo[];
   currentModel: string | null;
+  isConnected: boolean; // 新增：连接状态
+  connectedProvider: ProviderType | null; // 新增：当前连接的Provider
+  connectedModel: string | null; // 新增：当前连接的模型
 }
 
 // 存储键 - 简单明了
@@ -23,28 +27,25 @@ const STORAGE = {
   MODEL: 'current_model'
 } as const;
 
-// 默认配置 - 去掉过度抽象
+// 默认配置 - 移除所有默认模型配置
 const getDefaultConfig = (type: ProviderType): ProviderConfig => {
   switch (type) {
     case 'ollama':
       return {
         type: 'ollama',
-        apiUrl: import.meta.env.VITE_OLLAMA_URL || 'http://localhost:8000',
-        defaultModel: 'llama2'
+        apiUrl: import.meta.env.VITE_OLLAMA_URL || 'http://localhost:8000'
       };
     case 'openai':
       return {
         type: 'openai',
         apiUrl: 'https://api.openai.com/v1',
-        apiKey: import.meta.env.VITE_OPENAI_KEY || '',
-        defaultModel: 'gpt-4'
+        apiKey: import.meta.env.VITE_OPENAI_KEY || ''
       };
     case 'anthropic':
       return {
         type: 'anthropic',
         apiUrl: 'https://api.anthropic.com/v1',
-        apiKey: import.meta.env.VITE_CLAUDE_KEY || '',
-        defaultModel: 'claude-3-sonnet-20240229'
+        apiKey: import.meta.env.VITE_CLAUDE_KEY || ''
       };
     default:
       throw new Error(`Unsupported provider: ${type}`);
@@ -57,7 +58,7 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
     case 'ollama':
       return new OllamaProvider(config);
     case 'openai':
-      if (!config.apiKey) throw new Error('OpenAI API key required');
+      // OpenAI Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new OpenAIProvider(config);
     case 'anthropic':
       if (!config.apiKey) throw new Error('Anthropic API key required');
@@ -70,14 +71,22 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
 export function useProvider() {
   // 合并状态 - 减少状态管理复杂性
   const [state, setState] = useState<ProviderState>(() => {
-    const savedType = getFromStorage(STORAGE.TYPE, 'ollama' as ProviderType);
+    const savedType = getFromStorage(STORAGE.TYPE, 'openai' as ProviderType);
+    const savedModel = getFromStorage(STORAGE.MODEL, null);
+    const savedConnectedProvider = getFromStorage('connected_provider', null);
+    const savedConnectedModel = getFromStorage('connected_model', null);
+    
     return {
       provider: null,
       type: savedType,
       isLoading: false,
+      isModelLoading: false,
       error: null,
       models: [],
-      currentModel: getFromStorage(STORAGE.MODEL, null)
+      currentModel: savedModel,
+      isConnected: !!(savedConnectedProvider && savedConnectedModel),
+      connectedProvider: savedConnectedProvider,
+      connectedModel: savedConnectedModel
     };
   });
 
@@ -110,33 +119,35 @@ export function useProvider() {
     }
   }, [state.type, setError]);
 
-  // 切换 Provider - 简单明了
+  // 切换 Provider - 简单明了，不强制测试连接
   const switchProvider = useCallback(async (type: ProviderType, config?: ProviderConfig) => {
     try {
       const finalConfig = { ...getDefaultConfig(type), ...config };
       const provider = createProvider(type, finalConfig);
       
-      // 测试连接
-      const testResult = await provider.testConnection();
-      if (!testResult.success) {
-        throw new Error(testResult.error || 'Connection test failed');
-      }
-      
-      // 更新状态
-      setState({
+      // 更新状态，保留models列表但清空当前选中的模型，重置连接状态
+      setState(prev => ({
+        ...prev,
         provider,
         type,
         isLoading: false,
         error: null,
-        models: [],
-        currentModel: null
-      });
+        currentModel: null,
+        // 重置连接状态
+        isConnected: false,
+        connectedProvider: null,
+        connectedModel: null
+      }));
       
       // 保存配置
       configRef.current = finalConfig;
       saveToStorage(STORAGE.TYPE, type);
       saveToStorage(STORAGE.CONFIG, finalConfig);
       saveToStorage(STORAGE.MODEL, null);
+      
+      // 清除连接状态的存储
+      saveToStorage('connected_provider', null);
+      saveToStorage('connected_model', null);
       
       console.log(`[Provider] Switched to ${type}`);
       return true;
@@ -146,33 +157,27 @@ export function useProvider() {
     }
   }, [setError]);
 
-  // 加载模型 - 直接简单
+  // 加载模型 - 移除自动选择模型逻辑
   const loadModels = useCallback(async () => {
     if (!state.provider) return;
     
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState(prev => ({ ...prev, isModelLoading: true })); // 使用独立的模型加载状态
     
     try {
       const result = await state.provider.listModels();
       if (result.success && result.data) {
         const models = result.data.models;
-        const defaultModel = configRef.current.defaultModel;
-        const currentModel = defaultModel && models.some(m => m.id === defaultModel) 
-          ? defaultModel 
-          : models[0]?.id || null;
         
         setState(prev => ({
           ...prev,
           models,
-          currentModel,
-          isLoading: false
+          isModelLoading: false
         }));
-        
-        if (currentModel) {
-          saveToStorage(STORAGE.MODEL, currentModel);
-        }
+      } else {
+        setState(prev => ({ ...prev, isModelLoading: false }));
       }
     } catch (error) {
+      setState(prev => ({ ...prev, isModelLoading: false }));
       setError(error instanceof Error ? error.message : 'Failed to load models');
     }
   }, [state.provider, setError]);
@@ -208,27 +213,47 @@ export function useProvider() {
     }
   }, [state.provider, setError]);
 
+  // 新增：设置连接状态
+  const setConnectionStatus = useCallback((connected: boolean, providerType?: ProviderType, modelName?: string) => {
+    setState(prev => ({
+      ...prev,
+      isConnected: connected,
+      connectedProvider: connected ? (providerType || prev.type) : null,
+      connectedModel: connected ? (modelName || prev.currentModel) : null
+    }));
+    
+    // 保存连接状态
+    if (connected && providerType && modelName) {
+      saveToStorage('connected_provider', providerType);
+      saveToStorage('connected_model', modelName);
+    } else {
+      saveToStorage('connected_provider', null);
+      saveToStorage('connected_model', null);
+    }
+  }, []);
+
   // 自动初始化
   useEffect(() => {
     initProvider();
   }, [initProvider]); // 包含 initProvider 依赖
 
-  // 自动加载模型
-  useEffect(() => {
-    if (state.provider && state.models.length === 0 && !state.isLoading) {
-      loadModels();
-    }
-  }, [state.provider, state.models.length, state.isLoading, loadModels]);
+  // 注意：移除了自动加载模型的逻辑，改为用户手动触发
 
   return {
     // 状态
     provider: state.provider,
     providerType: state.type,
     config: configRef.current,
-    isLoading: state.isLoading,
+    isLoading: state.isLoading, // Provider 初始化加载状态
+    isModelLoading: state.isModelLoading, // 模型列表加载状态
     error: state.error,
     models: state.models,
     currentModel: state.currentModel,
+    
+    // 新增：连接状态
+    isConnected: state.isConnected,
+    connectedProvider: state.connectedProvider,
+    connectedModel: state.connectedModel,
     
     // 操作
     switchProvider,
@@ -241,6 +266,7 @@ export function useProvider() {
     loadModels,
     switchModel,
     testConnection,
+    setConnectionStatus, // 新增：设置连接状态的方法
     
     // 简化的支持列表
     supportedProviders: [

@@ -20,7 +20,7 @@ export abstract class BaseProvider implements IProvider {
 
   constructor(config: ProviderConfig) {
     this.config = { ...config };
-    this.currentModel = config.defaultModel || null;
+    this.currentModel = null;
   }
 
   /**

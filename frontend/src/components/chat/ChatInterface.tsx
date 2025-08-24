@@ -17,6 +17,9 @@ interface ChatInterfaceProps {
   // 状态
   isLoading: boolean;
   streamingMessageId?: string | null;
+  // Provider状态
+  hasProvider?: boolean;
+  onOpenSettings?: () => void;
   // 调试模式
   debugMode?: boolean;
   debugInfo?: string | null;
@@ -25,6 +28,52 @@ interface ChatInterfaceProps {
   // 样式
   className?: string;
 }
+
+/**
+未配置Provider时的状态组件
+*/
+const NoProviderState: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSettings }) => {
+  return (
+    <div className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center max-w-md">
+        {/* 图标 */}
+        <div className="mb-6">
+          <div className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <div className="text-3xl mb-2">🔧</div>
+        </div>
+
+        {/* 标题和描述 */}
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          需要配置 AI 服务提供商
+        </h3>
+        <p className="text-gray-600 mb-6">
+          请先配置 AI 服务提供商和模型，然后就可以开始聊天了。
+        </p>
+
+        {/* 配置按钮 */}
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            去配置
+          </button>
+        )}
+
+        {/* 小贴士 */}
+        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-xs text-blue-700 leading-relaxed">
+            💡 <strong>小贴士:</strong> 支持 OpenAI、Claude、Ollama 等多种 AI 服务提供商，你可以根据需要选择最适合的方案。
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /**
 空状态组件
@@ -115,6 +164,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onModeChange,
   isLoading,
   streamingMessageId,
+  hasProvider = true,
+  onOpenSettings,
   debugMode = false,
   debugInfo,
   onKeyDown,
@@ -157,7 +208,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
           {/* 空状态 */}
           {messages.length === 0 && (
-            <EmptyState selectedMode={selectedMode} />
+            <>             
+              {/* 如果Provider未配置，优先显示配置提示 */}
+              {!hasProvider ? (
+                <NoProviderState onOpenSettings={onOpenSettings} />
+              ) : (
+                <EmptyState selectedMode={selectedMode} />
+              )}
+            </>
           )}
 
           {/* 消息列表 */}
@@ -192,7 +250,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         onChange={onMessageChange}
         onSend={onSendMessage}
         onKeyDown={onKeyDown}
-        disabled={isLoading}
+        disabled={isLoading || !hasProvider}
         currentMode={selectedMode}
         maxLength={2000}
       />

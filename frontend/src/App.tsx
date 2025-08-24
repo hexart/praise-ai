@@ -3,7 +3,7 @@ import { AppHeader } from './components/layout/AppHeader';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { ToastContainer } from './components/ui/Toast';
-import { FullScreenLoading } from './components/ui/Loading';
+import { Loading } from './components/ui/Loading';
 import { useApp } from './hooks/useApp';
 import { useToast } from './hooks/useToast';
 import type { ChatMode } from './types/chat';
@@ -127,38 +127,38 @@ export const App: React.FC = () => {
     }
   }, [error, toast]);
 
-  // 如果应用未准备就绪，显示加载界面
-  if (!isReady && !error) {
-    return (
-      <FullScreenLoading
-        text="正在初始化AI助手..."
-      />
-    );
-  }
-  // 如果有严重错误且Provider不可用，显示错误界面
-  if (!provider.provider && error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+  // 如果应用未准备就绪且没有Provider，显示友好的引导界面而不是错误界面
+  if (!isReady) {
+    // 如果是因为没有Provider导致的未就绪，显示欢迎界面
+    if (!provider.provider && !provider.isLoading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              欢迎使用 AI 智能陪伴助手
+            </h3>
+            <p className="text-gray-600 mb-4">
+              请点击下方按钮配置 AI 服务提供商，选择合适的模型开始对话。
+            </p>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              开始配置
+            </button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            初始化失败
-          </h3>
-          <p className="text-gray-600 mb-4">
-            {error}
-          </p>
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            打开设置
-          </button>
         </div>
-      </div>
+      );
+    }
+
+    // 其他情况显示加载界面
+    return (
+      <Loading size="lg" text='正在初始化AI助手...' />
     );
   }
   return (
@@ -167,8 +167,13 @@ export const App: React.FC = () => {
       <AppHeader
         onSettingsClick={() => setIsSettingsOpen(true)}
         onClearHistory={handleClearHistory}
-        isConnected={!!provider.provider}
-        providerName={provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType}
+        isConnected={provider.isConnected}
+        providerName={provider.isConnected && provider.connectedProvider && provider.connectedModel
+          ? `${provider.supportedProviders.find(p => p.type === provider.connectedProvider)?.name || provider.connectedProvider} (${provider.connectedModel})`
+          : provider.provider
+            ? (provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType)
+            : '未配置'
+        }
         messageCount={chat.chatHistory.length}
         isLoading={chat.isLoading}
       />
@@ -187,6 +192,8 @@ export const App: React.FC = () => {
           debugMode={settings.debugMode}
           debugInfo={chat.lastDebugInfo}
           onKeyDown={handleKeyDown}
+          hasProvider={!!provider.provider}
+          onOpenSettings={() => setIsSettingsOpen(true)}
           className="flex-1"
         />
       </main>
@@ -205,6 +212,7 @@ export const App: React.FC = () => {
         currentModel={provider.currentModel}
         onModelSwitch={provider.switchModel}
         onLoadModels={provider.loadModels}
+        onSetConnectionStatus={provider.setConnectionStatus}
         settings={settings}
         onSettingsUpdate={updateSettings}
         userId={userId}
@@ -212,6 +220,13 @@ export const App: React.FC = () => {
         onImportData={handleImportData}
         onResetAll={handleResetAll}
         isLoading={provider.isLoading}
+        isModelLoading={provider.isModelLoading}
+      />
+
+      {/* 叠加式加载组件 - 当Provider正在初始化时显示 */}
+      <Loading
+        show={provider.isLoading && isSettingsOpen}
+        text="正在切换AI服务提供商..."
       />
 
       {/* Toast通知 */}

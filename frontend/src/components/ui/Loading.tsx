@@ -3,6 +3,7 @@ import React from 'react';
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
   text?: string;
+  show?: boolean;
   className?: string;
 }
 
@@ -12,8 +13,10 @@ interface LoadingProps {
 export const Loading: React.FC<LoadingProps> = ({
   size = 'md',
   text,
+  show = true,
   className = ''
 }) => {
+  if (!show) return null;
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
@@ -50,48 +53,5 @@ export const Loading: React.FC<LoadingProps> = ({
         )
       }
     </div >
-  );
-};
-
-/**
-骨架屏组件
-*/
-interface SkeletonProps {
-  className?: string;
-  rows?: number;
-}
-
-export const Skeleton: React.FC<SkeletonProps> = ({ className = '', rows = 1 }) => {
-  return (
-    <div className={`animate-pulse ${className}`}>
-      {Array.from({ length: rows }).map((_, index) => (
-        <div
-          key={index}
-          className={`bg-gray-200 rounded ${rows > 1 && index > 0 ? 'mt-2' : ''}`}
-          style={{
-            height: '1rem',
-            width: index === rows - 1 && rows > 1 ? '60%' : '100%'
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-/**
-全屏加载组件
-*/
-interface FullScreenLoadingProps {
-  text?: string;
-}
-
-export const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({ text = '加载中...' }) => {
-  return (
-    <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
-      <div className="text-center">
-        <Loading size="lg" />
-        <p className="mt-4 text-gray-600 text-lg">{text}</p>
-      </div>
-    </div>
   );
 };

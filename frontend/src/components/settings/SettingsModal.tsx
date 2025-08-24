@@ -33,6 +33,7 @@ interface SettingsModalProps {
   currentModel: string | null;
   onModelSwitch: (modelId: string) => Promise<boolean>;
   onLoadModels: () => Promise<void>;
+  onSetConnectionStatus?: (connected: boolean, providerType?: ProviderType, modelName?: string) => void; // 新增
 
   // 应用设置
   settings: {
@@ -57,7 +58,8 @@ interface SettingsModalProps {
   onResetAll: () => void;
 
   // 加载状态
-  isLoading?: boolean;
+  isLoading?: boolean; // Provider 初始化加载状态
+  isModelLoading?: boolean; // 新增：模型列表加载状态
 }
 
 type TabType = 'provider' | 'app' | 'data' | 'about';
@@ -78,13 +80,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   currentModel,
   onModelSwitch,
   onLoadModels,
+  onSetConnectionStatus, // 新增
   settings,
   onSettingsUpdate,
   userId,
   onExportData,
   onImportData,
   onResetAll,
-  isLoading = false
+  isLoading = false, // Provider 初始化加载状态
+  isModelLoading = false // 新增：模型列表加载状态
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('provider');
   const [importText, setImportText] = useState('');
@@ -183,7 +187,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               currentModel={currentModel}
               onModelSwitch={onModelSwitch}
               onLoadModels={onLoadModels}
+              onSetConnectionStatus={onSetConnectionStatus}
               isLoading={isLoading}
+              isModelLoading={isModelLoading}
             />
           )}
 

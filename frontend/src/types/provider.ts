@@ -12,7 +12,6 @@ export interface ProviderConfig {
   type: ProviderType;
   apiUrl: string;
   apiKey?: string;
-  defaultModel?: string;
   timeout?: number;
   maxRetries?: number;
   headers?: Record<string, string>;

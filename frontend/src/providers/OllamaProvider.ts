@@ -304,14 +304,14 @@ export class OllamaProvider extends BaseProvider {
     onMetadata?: MetadataCallback
   ): Promise<void> {
     this.logger.debug('发送流式消息', {
-      model: this.currentModel || this.config.defaultModel,
+      model: this.currentModel,
       messageLength: request.message.length
     });
 
     if (!this.currentModel) {
       // 尝试使用默认模型
-      this.currentModel = this.config.defaultModel || null;
-      this.logger.info('自动设置当前模型', { model: this.currentModel });
+      this.currentModel = null;
+      this.logger.info('当前没有选择模型', { model: this.currentModel });
     }
 
     if (!this.currentModel) {

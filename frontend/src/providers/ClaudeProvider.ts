@@ -126,7 +126,7 @@ export class ClaudeProvider extends BaseProvider {
       success: true,
       data: {
         models,
-        currentModel: this.currentModel || this.config.defaultModel,
+        currentModel: this.currentModel || undefined,
         total: models.length,
         hasMore: false
       }
@@ -243,7 +243,10 @@ export class ClaudeProvider extends BaseProvider {
     onChunk: StreamCallback,
     onMetadata?: MetadataCallback
   ): Promise<void> {
-    const model = this.currentModel || this.config.defaultModel || 'claude-opus-4-1-20250805';
+    const model = this.currentModel;
+    if (!model) {
+      throw new Error('No model selected');
+    }
     const messages = this.buildMessages(request);
 
     const payload: {
@@ -292,7 +295,13 @@ export class ClaudeProvider extends BaseProvider {
    * 发送普通消息
    */
   async sendMessage(request: ChatRequest): Promise<APIResponse<ChatResponse>> {
-    const model = this.currentModel || this.config.defaultModel || 'claude-opus-4-1-20250805';
+    const model = this.currentModel;
+    if (!model) {
+      return {
+        success: false,
+        error: 'No model selected'
+      };
+    }
     const messages = this.buildMessages(request);
 
     const payload: {

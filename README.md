@@ -90,17 +90,14 @@ cp .env.example .env.local
 ```env
 # Ollama 配置（本地模型服务）
 VITE_OLLAMA_URL=http://localhost:8000
-VITE_OLLAMA_DEFAULT_MODEL=llama2
 
 # OpenAI 配置（如需使用 OpenAI 服务）
 VITE_OPENAI_URL=https://api.openai.com/v1
 VITE_OPENAI_KEY=your-actual-openai-api-key
-VITE_OPENAI_DEFAULT_MODEL=gpt-4-0613
 
 # Anthropic Claude 配置（如需使用 Claude 服务）
 VITE_CLAUDE_URL=https://api.anthropic.com/v1
 VITE_CLAUDE_KEY=your-actual-anthropic-api-key
-VITE_CLAUDE_DEFAULT_MODEL=claude-opus-4-1-20250805
 ```
 
 > **注意**：
@@ -161,13 +158,10 @@ pnpm preview
 | 变量名 | 说明 | 默认值 | 必需 |
 |--------|------|--------|------|
 | `VITE_OLLAMA_URL` | Ollama 服务地址 | `http://localhost:8000` | 否 |
-| `VITE_OLLAMA_DEFAULT_MODEL` | Ollama 默认模型 | `llama2` | 否 |
 | `VITE_OPENAI_URL` | OpenAI API 地址 | `https://api.openai.com/v1` | 否 |
 | `VITE_OPENAI_KEY` | OpenAI API 密钥 | - | 使用 OpenAI 时必需 |
-| `VITE_OPENAI_DEFAULT_MODEL` | OpenAI 默认模型 | `gpt-3.5-turbo` | 否 |
 | `VITE_CLAUDE_URL` | Claude API 地址 | `https://api.anthropic.com/v1` | 否 |
 | `VITE_CLAUDE_KEY` | Anthropic API 密钥 | - | 使用 Claude 时必需 |
-| `VITE_CLAUDE_DEFAULT_MODEL` | Claude 默认模型 | `claude-opus-4-1-20250805` | 否 |
 
 ### Provider 配置
 
