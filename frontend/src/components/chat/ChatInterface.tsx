@@ -2,15 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { ModeSelector } from './ModeSelector';
-import { InputArea } from './InputArea';
 import type { ChatMessage, ChatMode } from '../../types/chat';
 
 interface ChatInterfaceProps {
   // 聊天数据
   messages: ChatMessage[];
-  currentMessage: string;
-  onMessageChange: (message: string) => void;
-  onSendMessage: () => void;
   // 模式管理
   selectedMode: ChatMode;
   onModeChange: (mode: ChatMode) => void;
@@ -23,8 +19,6 @@ interface ChatInterfaceProps {
   // 调试模式
   debugMode?: boolean;
   debugInfo?: string | null;
-  // 键盘事件
-  onKeyDown?: (e: React.KeyboardEvent) => void;
   // 样式
   className?: string;
 }
@@ -157,9 +151,6 @@ const EmptyState: React.FC<{ selectedMode: ChatMode }> = ({ selectedMode }) => {
 */
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages,
-  currentMessage,
-  onMessageChange,
-  onSendMessage,
   selectedMode,
   onModeChange,
   isLoading,
@@ -168,7 +159,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onOpenSettings,
   debugMode = false,
   debugInfo,
-  onKeyDown,
   className = ''
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -201,7 +191,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {/* 聊天消息区域 */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-6"
+        className="flex-1 overflow-y-auto px-4 py-6 pb-48"
         style={{ scrollBehavior: 'smooth' }}
       >
         <div className="max-w-4xl mx-auto">
@@ -243,17 +233,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <div ref={messagesEndRef} />
         </div>
       </div>
-
-      {/* 输入区域 */}
-      <InputArea
-        value={currentMessage}
-        onChange={onMessageChange}
-        onSend={onSendMessage}
-        onKeyDown={onKeyDown}
-        disabled={isLoading || !hasProvider}
-        currentMode={selectedMode}
-        maxLength={2000}
-      />
     </div>
   );
 };

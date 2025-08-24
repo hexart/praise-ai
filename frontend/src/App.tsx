@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { AppHeader } from './components/layout/AppHeader';
 import { ChatInterface } from './components/chat/ChatInterface';
+import { InputArea } from './components/chat/InputArea';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { ToastContainer } from './components/ui/Toast';
 import { Loading } from './components/ui/Loading';
@@ -162,7 +163,7 @@ export const App: React.FC = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-24 md:pt-16">
       {/* 头部 */}
       <AppHeader
         onSettingsClick={() => setIsSettingsOpen(true)}
@@ -182,16 +183,12 @@ export const App: React.FC = () => {
       <main className="flex-1 flex flex-col overflow-hidden">
         <ChatInterface
           messages={chat.chatHistory}
-          currentMessage={currentMessage}
-          onMessageChange={setCurrentMessage}
-          onSendMessage={handleSendMessage}
           selectedMode={selectedMode}
           onModeChange={setSelectedMode}
           isLoading={chat.isLoading}
           streamingMessageId={chat.streamingMessageId}
           debugMode={settings.debugMode}
           debugInfo={chat.lastDebugInfo}
-          onKeyDown={handleKeyDown}
           hasProvider={!!provider.provider}
           onOpenSettings={() => setIsSettingsOpen(true)}
           className="flex-1"
@@ -227,6 +224,17 @@ export const App: React.FC = () => {
       <Loading
         show={provider.isLoading && isSettingsOpen}
         text="正在切换AI服务提供商..."
+      />
+
+      {/* 固定输入区域 */}
+      <InputArea
+        value={currentMessage}
+        onChange={setCurrentMessage}
+        onSend={handleSendMessage}
+        onKeyDown={handleKeyDown}
+        disabled={chat.isLoading || !provider.provider}
+        currentMode={selectedMode}
+        maxLength={2000}
       />
 
       {/* Toast通知 */}

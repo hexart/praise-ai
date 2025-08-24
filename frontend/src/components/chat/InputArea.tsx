@@ -91,7 +91,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   const isOverLimit = value.length > maxLength;
   const canSend = value.trim() && !disabled && !isOverLimit;
   return (
-    <div className="border-t border-gray-200 bg-white p-4">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* 输入框容器 */}
         <div
