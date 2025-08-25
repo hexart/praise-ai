@@ -26,9 +26,7 @@ export class ClaudeProvider extends BaseProvider {
     if (!this.config.apiUrl) {
       return 'API URL is required';
     }
-    if (!this.config.apiKey) {
-      return 'Anthropic API key is required';
-    }
+    // 在实际调用API时检查API密钥，而不是在创建实例时
     return null;
   }
 
@@ -42,6 +40,7 @@ export class ClaudeProvider extends BaseProvider {
       ...this.config.headers
     };
 
+    // 只有在有 API 密钥时才设置认证头
     if (this.config.apiKey) {
       // Claude 需要特殊的头
       headers['x-api-key'] = this.config.apiKey;
@@ -61,6 +60,14 @@ export class ClaudeProvider extends BaseProvider {
       return {
         success: false,
         error: validationError
+      };
+    }
+
+    // 测试连接时必须有 API 密钥
+    if (!this.config.apiKey) {
+      return {
+        success: false,
+        error: 'API key is required for connection test'
       };
     }
 
@@ -98,6 +105,14 @@ export class ClaudeProvider extends BaseProvider {
    * 获取模型列表
    */
   async listModels(): Promise<APIResponse<ModelsResponse>> {
+    // 获取模型列表时必须有 API 密钥
+    if (!this.config.apiKey) {
+      return {
+        success: false,
+        error: 'API key is required to fetch models'
+      };
+    }
+
     // 使用 Anthropic API 的 models 端点
     const result = await this.request<{
       data: Array<{
@@ -243,6 +258,11 @@ export class ClaudeProvider extends BaseProvider {
     onChunk: StreamCallback,
     onMetadata?: MetadataCallback
   ): Promise<void> {
+    // 发送消息时必须有 API 密钥
+    if (!this.config.apiKey) {
+      throw new Error('API key is required to send messages');
+    }
+
     const model = this.currentModel;
     if (!model) {
       throw new Error('No model selected');
@@ -295,6 +315,14 @@ export class ClaudeProvider extends BaseProvider {
    * 发送普通消息
    */
   async sendMessage(request: ChatRequest): Promise<APIResponse<ChatResponse>> {
+    // 发送消息时必须有 API 密钥
+    if (!this.config.apiKey) {
+      return {
+        success: false,
+        error: 'API key is required to send messages'
+      };
+    }
+
     const model = this.currentModel;
     if (!model) {
       return {

@@ -173,6 +173,11 @@ pnpm preview
 | `VITE_CLAUDE_URL` | Claude API 地址 | `https://api.anthropic.com/v1` | 否 |
 | `VITE_CLAUDE_KEY` | Anthropic API 密钥 | - | 使用 Claude 时必需 |
 
+## 🌐 GitHub Pages 部署说明
+
+当应用部署在 GitHub Pages 等静态托管平台上时，由于无法使用环境变量，您需要通过应用界面手动配置 AI 服务提供商。
+
+
 ### Provider 配置
 
 应用支持多种 AI 服务提供商：

@@ -38,13 +38,13 @@ const getDefaultConfig = (type: ProviderType): ProviderConfig => {
     case 'openai':
       return {
         type: 'openai',
-        apiUrl: 'https://api.openai.com/v1',
+        apiUrl: import.meta.env.VITE_OPENAI_URL || 'https://api.openai.com/v1',
         apiKey: import.meta.env.VITE_OPENAI_KEY || ''
       };
     case 'anthropic':
       return {
         type: 'anthropic',
-        apiUrl: 'https://api.anthropic.com/v1',
+        apiUrl: import.meta.env.VITE_CLAUDE_URL || 'https://api.anthropic.com/v1',
         apiKey: import.meta.env.VITE_CLAUDE_KEY || ''
       };
     default:
@@ -61,7 +61,7 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
       // OpenAI Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new OpenAIProvider(config);
     case 'anthropic':
-      if (!config.apiKey) throw new Error('Anthropic API key required');
+      // Claude Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new ClaudeProvider(config);
     default:
       throw new Error(`Unsupported provider: ${type}`);

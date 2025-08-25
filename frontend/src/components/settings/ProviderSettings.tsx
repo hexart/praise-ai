@@ -143,6 +143,28 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       return;
     }
 
+    // 检查配置是否有效
+    if (!currentConfig.apiUrl) {
+      setTestStatus('error');
+      setTestMessage('请填写完整的 API 配置（包括 API 地址）');
+      setTimeout(() => {
+        setTestStatus('idle');
+        setTestMessage('');
+      }, 3000);
+      return;
+    }
+    
+    // 对于需要 API 密钥的 Provider，检查是否已填写
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
+      setTestStatus('error');
+      setTestMessage('请填写完整的 API 配置（包括 API 密钥）');
+      setTimeout(() => {
+        setTestStatus('idle');
+        setTestMessage('');
+      }, 3000);
+      return;
+    }
+
     setTestStatus('testing');
     setTestMessage('正在测试连接...');
 
@@ -197,10 +219,10 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     }
   };
 
-  // 处理模型下拉菜单点击 - 只有在配置有效时才允许加载模型
+  // 处理模型下拉菜单点击 - 统一处理所有 Provider
   const handleModelDropdownClick = async () => {
-    // 检查配置是否有效
-    if (!isConfigValid()) {
+    // 检查基本配置是否有效
+    if (!currentConfig.apiUrl) {
       return; // 不允许打开下拉菜单
     }
 
@@ -215,9 +237,21 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     setModelDropdownOpen(!modelDropdownOpen);
   };
 
-  // 处理模型加载 - 移除自动选择模型逻辑
+  // 处理模型加载 - 在加载前检查配置
   const handleLoadModels = async () => {
     if (isModelLoading) return; // 使用独立的模型加载状态
+    
+    // 检查配置是否有效
+    if (!currentConfig.apiUrl) {
+      logger.error('无法加载模型：请先填写 API 地址');
+      return;
+    }
+    
+    // 对于需要 API 密钥的 Provider，检查是否已填写
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
+      logger.error('无法加载模型：请先填写 API 密钥');
+      return;
+    }
     
     logger.info('[ProviderSettings] Loading models...');
     try {
@@ -243,12 +277,16 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     }
   };
 
-  // 检查配置是否有效
+  // 检查配置是否有效 - 统一处理所有 Provider
   const isConfigValid = () => {
     if (!currentConfig.apiUrl) return false;
+    
+    // 对于需要 API 密钥的 Provider，检查是否已填写
     if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
-      return false;
+      // 允许用户打开下拉菜单，但在获取模型时会提示需要填写 API 密钥
+      return true;
     }
+    
     return true;
   };
 
