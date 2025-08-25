@@ -4,9 +4,9 @@ import { ChatInterface } from './components/chat/ChatInterface';
 import { InputArea } from './components/chat/InputArea';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { Loading } from './components/ui/Loading';
-import { Toaster } from './components/ui/Toaster'; // 使用我们自定义的 Toaster 组件
+import { Toaster } from './components/ui/Toaster';
 import { useApp } from './hooks/useApp';
-import { useToast } from './hooks/useToast';
+import { toast } from 'sonner';
 import type { ChatMode } from './types/chat';
 import type { ProviderType, ProviderConfig } from './types/provider';
 
@@ -32,8 +32,7 @@ export const App: React.FC = () => {
     exportData,
     importData
   } = useApp();
-  // 使用Toast
-  const { toast } = useToast();
+
   // 处理消息发送
   const handleSendMessage = useCallback(async () => {
     if (!currentMessage.trim() || chat.isLoading) return;
@@ -49,7 +48,8 @@ export const App: React.FC = () => {
         description: errorMessage
       });
     }
-  }, [currentMessage, selectedMode, chat, toast]);
+  }, [currentMessage, selectedMode, chat]);
+
   // 处理键盘事件
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -57,6 +57,7 @@ export const App: React.FC = () => {
       handleSendMessage();
     }
   }, [handleSendMessage]);
+
   // 处理清空历史
   const handleClearHistory = useCallback(() => {
     if (confirm('确定要清空所有聊天记录吗？')) {
@@ -64,23 +65,23 @@ export const App: React.FC = () => {
       emotion.clearHistory();
       toast.info('聊天记录已清空');
     }
-  }, [chat, emotion, toast]);
+  }, [chat, emotion]);
 
   // 处理模式切换
   const handleModeChange = useCallback((mode: ChatMode) => {
     setSelectedMode(mode);
-    
+
     // 根据模式显示不同的提示信息
     const modeNames = {
       'smart': '智能模式',
       'praise': '夸夸模式',
       'comfort': '安慰模式'
     };
-    
+
     toast.info(`已切换到${modeNames[mode]}`, {
       description: `现在使用${modeNames[mode]}回应你的消息`
     });
-  }, [toast]);
+  }, []);
 
   // 处理Provider切换
   const handleProviderChange = useCallback(async (type: ProviderType, config: ProviderConfig) => {
@@ -104,7 +105,8 @@ export const App: React.FC = () => {
       });
       return false;
     }
-  }, [provider, toast]);
+  }, [provider]);
+
   // 处理连接测试
   const handleTestConnection = useCallback(async () => {
     try {
@@ -124,7 +126,8 @@ export const App: React.FC = () => {
       });
       return false;
     }
-  }, [provider, toast]);
+  }, [provider]);
+
   // 处理数据导入
   const handleImportData = useCallback((data: string) => {
     try {
@@ -141,14 +144,14 @@ export const App: React.FC = () => {
       });
       return false;
     }
-  }, [importData, toast]);
+  }, [importData]);
 
   // 处理重置所有数据
   const handleResetAll = useCallback(() => {
     resetAll();
     toast.info('所有数据已重置');
     setIsSettingsOpen(false);
-  }, [resetAll, toast]);
+  }, [resetAll]);
 
   // 错误处理 - 只在错误首次出现时显示toast
   const lastErrorRef = React.useRef<string | null>(null);
@@ -159,7 +162,7 @@ export const App: React.FC = () => {
       });
       lastErrorRef.current = error;
     }
-  }, [error, toast]);
+  }, [error]);
 
   // 如果应用未准备就绪且没有Provider，显示友好的引导界面而不是错误界面
   if (!isReady) {
