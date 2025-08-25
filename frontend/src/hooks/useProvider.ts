@@ -304,11 +304,16 @@ export function useProvider() {
       configRef.current = updatedConfig;
       setConfigState(updatedConfig); // 更新状态以触发重新渲染
       
+      // 同时更新Provider实例的配置
+      if (state.provider) {
+        state.provider.updateConfig(newConfig);
+      }
+      
       // 保存当前 Provider 的配置到专用存储键
       saveToStorage(getProviderStorageKey(state.type), updatedConfig);
       
       console.log('[Provider] Config updated');
-    }, [state.type]),
+    }, [state.provider, state.type]),
     loadModels,
     switchModel,
     testConnection,
