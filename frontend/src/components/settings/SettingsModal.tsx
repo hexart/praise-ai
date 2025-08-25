@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Settings, Server, Bug, Download, Upload, RotateCcw, User } from 'lucide-react';
+import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { ProviderSettings } from './ProviderSettings';
 import type { ProviderType, ProviderConfig } from '../../types/provider';
 import type { ChatMode } from '../../types/chat';
+
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -92,6 +93,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('provider');
   const [importText, setImportText] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false); // 改为内部显示确认内容
 
   const tabs = [
     { id: 'provider' as TabType, name: 'API配置', icon: Server },
@@ -107,7 +109,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lickdog-praise-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `praise-ai-backup-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -142,9 +144,47 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     };
     reader.readAsText(file);
   };
+  
+  // 渲染重置确认内容
+  const renderResetConfirm = () => (
+    <div className="space-y-6">
+      <div className="flex items-start space-x-3">
+        <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <h3 className="font-medium text-gray-900">您确定要重置所有数据吗？</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            此操作无法撤销，请谨慎操作。
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <h4 className="font-medium text-red-900 mb-2">将被清除的数据包括：</h4>
+        <ul className="text-sm text-red-700 space-y-1">
+          <li>• 所有聊天记录和对话历史</li>
+          <li>• 个人设置和偏好配置</li>
+          <li>• 情感分析历史数据</li>
+          <li>• AI服务提供商配置</li>
+          <li>• 应用状态和缓存数据</li>
+        </ul>
+      </div>
+
+      <div className="flex justify-end space-x-3">
+        <Button variant="secondary" onClick={() => setShowResetConfirm(false)}>
+          取消
+        </Button>
+        <Button variant="danger" onClick={() => {
+          setShowResetConfirm(false);
+          onResetAll();
+        }}>
+          确认重置
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={onClose} title="设置" size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="设置" size="xl">
       <div className="flex h-128">
         {/* 侧边栏 */}
         <div className="w-48 border-r border-gray-200 pr-4">
@@ -285,73 +325,84 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 数据管理 */}
           {activeTab === 'data' && (
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
+              {!showResetConfirm ? (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
 
-              {/* 导出数据 */}
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">导出数据</h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  导出所有聊天记录、设置和配置到JSON文件
-                </p>
-                <Button onClick={handleExportData} variant="primary" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  导出数据
-                </Button>
-              </div>
-
-              {/* 导入数据 */}
-              <div className="p-4 border border-gray-200 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">导入数据</h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  从备份文件恢复数据
-                </p>
-
-                <div className="space-y-3">
-                  <div>
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={handleFileImport}
-                      className="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
+                  {/* 导出数据 */}
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">导出数据</h4>
+                    <p className="text-sm text-gray-600 mb-3">
+                      导出所有聊天记录、设置和配置到JSON文件
+                    </p>
+                    <Button onClick={handleExportData} variant="primary" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      导出数据
+                    </Button>
                   </div>
 
-                  <div>
-                    <textarea
-                      value={importText}
-                      onChange={(e) => setImportText(e.target.value)}
-                      placeholder="或直接粘贴JSON数据..."
-                      className="w-full h-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    />
+                  {/* 导入数据 */}
+                  <div className="p-4 border border-gray-200 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-2">导入数据</h4>
+                    <p className="text-sm text-gray-600 mb-3">
+                      从备份文件恢复数据
+                    </p>
+
+                    <div className="space-y-3">
+                      <div>
+                        <input
+                          type="file"
+                          accept=".json"
+                          onChange={handleFileImport}
+                          className="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                      </div>
+
+                      <div>
+                        <textarea
+                          value={importText}
+                          onChange={(e) => setImportText(e.target.value)}
+                          placeholder="或直接粘贴JSON数据..."
+                          className="w-full h-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+
+                      <Button
+                        onClick={handleImportData}
+                        variant="success"
+                        size="sm"
+                        disabled={!importText.trim()}
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        导入数据
+                      </Button>
+                    </div>
                   </div>
 
-                  <Button
-                    onClick={handleImportData}
-                    variant="success"
-                    size="sm"
-                    disabled={!importText.trim()}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    导入数据
-                  </Button>
-                </div>
-              </div>
-
-              {/* 重置数据 */}
-              <div className="flex p-4 border border-red-200 bg-red-50 rounded-lg">
-                <div className='flex-1 flex'>
-                  <h4 className="font-medium text-red-900 mb-2">重置所有数据</h4>
-                  <p className="text-sm text-red-700 mb-3">
-                    ⚠️ 这将删除所有聊天记录、设置和配置，且无法恢复
-                  </p>
-                </div>
-                <div className="flex">
-                  <Button onClick={onResetAll} variant="danger" size="sm">
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    重置所有数据
-                  </Button>
-                </div>
-              </div>
+                  {/* 重置数据 */}
+                  <div className="flex p-4 border border-red-200 bg-red-50 rounded-lg">
+                    <div className='flex-1 flex'>
+                      <h4 className="font-medium text-red-900 mb-2">重置所有数据</h4>
+                      <p className="text-sm text-red-700 mb-3">
+                        ⚠️ 这将删除所有聊天记录、设置和配置，且无法恢复
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <Button 
+                        onClick={() => setShowResetConfirm(true)} 
+                        variant="danger" 
+                        size="sm"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        重置所有数据
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // 显示重置确认内容
+                renderResetConfirm()
+              )}
             </div>
           )}
 
@@ -404,8 +455,5 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
       </div>
     </Modal>
-
-
-    </>
   );
 };

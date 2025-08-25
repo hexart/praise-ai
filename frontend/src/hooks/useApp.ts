@@ -28,7 +28,7 @@ interface UseAppReturn {
   isReady: boolean;
   error: string | null;
   // 工具方法
-  resetAll: () => void;
+  resetAll: () => boolean;
   exportData: () => string;
   importData: (data: string) => boolean;
 }
@@ -115,27 +115,28 @@ export function useApp(): UseAppReturn {
 
   // 重置所有数据
   const resetAll = useCallback(() => {
-    if (confirm('确定要重置所有数据吗？这将清除聊天记录、设置和分析历史。')) {
-      try {
-        // 清除聊天记录
-        chat.clearHistory();
-        // 清除情感分析历史
-        emotion.clearHistory();
+    // 直接执行重置操作，确认逻辑在UI层处理
+    try {
+      // 清除聊天记录
+      chat.clearHistory();
+      // 清除情感分析历史
+      emotion.clearHistory();
 
-        // 重置设置
-        setSettings(DEFAULT_SETTINGS);
-        saveToStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+      // 重置设置
+      setSettings(DEFAULT_SETTINGS);
+      saveToStorage(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
 
-        // 清除错误状态
-        setError(null);
+      // 清除错误状态
+      setError(null);
 
-        logger.info('useApp', 'All data has been reset');
+      logger.info('useApp', 'All data has been reset');
+      return true; // 返回true表示操作已执行
 
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to reset data';
-        setError(errorMessage);
-        logger.error('Failed to reset data: ' + (err instanceof Error ? err.message : String(err)));
-      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reset data';
+      setError(errorMessage);
+      logger.error('Failed to reset data: ' + (err instanceof Error ? err.message : String(err)));
+      return false; // 返回false表示操作失败
     }
   }, [chat, emotion]);
 

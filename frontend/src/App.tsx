@@ -148,9 +148,11 @@ export const App: React.FC = () => {
 
   // 处理重置所有数据
   const handleResetAll = useCallback(() => {
-    resetAll();
-    toast.info('所有数据已重置');
-    setIsSettingsOpen(false);
+    const success = resetAll();
+    if (success) {
+      toast.info('所有数据已重置');
+      setIsSettingsOpen(false);
+    }
   }, [resetAll]);
 
   // 错误处理 - 只在错误首次出现时显示toast
