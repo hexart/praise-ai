@@ -79,13 +79,14 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     };
   }, []);
 
-  // 处理Provider切换 - 移除默认模型配置，不触发任何操作
+  // 处理Provider切换 - 实现更智能的配置管理
   const handleProviderSelect = async (providerType: ProviderType) => {
     if (providerType === currentProvider) {
       setProviderDropdownOpen(false);
       return;
     }
 
+    // 为每个 Provider 类型定义默认配置
     const defaultConfigs: Record<ProviderType, ProviderConfig> = {
       ollama: {
         type: 'ollama',
@@ -113,6 +114,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       }
     };
 
+    // 使用默认配置切换 Provider，让 useProvider hook 自动处理配置加载
     const newConfig = defaultConfigs[providerType];
     const success = await onProviderChange(providerType, newConfig);
 

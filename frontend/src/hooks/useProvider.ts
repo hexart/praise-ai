@@ -27,7 +27,10 @@ const STORAGE = {
   MODEL: 'current_model'
 } as const;
 
-// 默认配置 - 移除所有默认模型配置
+// 为每个 Provider 类型定义存储键
+const getProviderStorageKey = (type: ProviderType) => `provider_config_${type}`;
+
+// 默认配置 - 从环境变量获取，如果没有则为空
 const getDefaultConfig = (type: ProviderType): ProviderConfig => {
   switch (type) {
     case 'ollama':
@@ -48,8 +51,29 @@ const getDefaultConfig = (type: ProviderType): ProviderConfig => {
         apiKey: import.meta.env.VITE_CLAUDE_KEY || ''
       };
     default:
-      throw new Error(`Unsupported provider: ${type}`);
+      // 对于其他类型（如 gemini, custom），返回基础配置
+      return {
+        type,
+        apiUrl: '',
+        apiKey: ''
+      };
   }
+};
+
+// 获取 Provider 的最终配置（优先级：用户配置 > 本地存储 > 环境变量 > 默认值）
+const getFinalConfig = (type: ProviderType, userConfig?: ProviderConfig): ProviderConfig => {
+  // 1. 获取默认配置（环境变量或默认值）
+  const defaultConfig = getDefaultConfig(type);
+  
+  // 2. 尝试从本地存储获取该 Provider 的配置
+  const storedConfig = getFromStorage<Partial<ProviderConfig>>(getProviderStorageKey(type), {});
+  
+  // 3. 合并配置：用户配置 > 本地存储 > 默认配置
+  return {
+    ...defaultConfig,
+    ...storedConfig,
+    ...userConfig
+  };
 };
 
 // 简单的 Provider 工厂
@@ -64,7 +88,8 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
       // Claude Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new ClaudeProvider(config);
     default:
-      throw new Error(`Unsupported provider: ${type}`);
+      // 对于其他 Provider 类型，抛出错误，确保只使用已知的 Provider 类型
+      throw new Error(`Unsupported provider type: ${type}`);
   }
 };
 
@@ -91,10 +116,10 @@ export function useProvider() {
   });
 
   // 配置使用 ref - 避免不必要的重渲染
-  const configRef = useRef<ProviderConfig>(getDefaultConfig(state.type));
+  const configRef = useRef<ProviderConfig>(getFinalConfig(state.type));
   
   // 添加一个状态来跟踪配置变化，确保组件能正确重新渲染
-  const [configState, setConfigState] = useState<ProviderConfig>(getDefaultConfig(state.type));
+  const [configState, setConfigState] = useState<ProviderConfig>(getFinalConfig(state.type));
 
   // 错误处理 - 简单直接，不要复杂的日志系统
   const setError = useCallback((error: string) => {
@@ -107,7 +132,7 @@ export function useProvider() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const config = { ...getDefaultConfig(state.type), ...configRef.current };
+      const config = getFinalConfig(state.type);
       const provider = createProvider(state.type, config);
       
       setState(prev => ({
@@ -125,7 +150,8 @@ export function useProvider() {
   // 切换 Provider - 简单明了，不强制测试连接
   const switchProvider = useCallback(async (type: ProviderType, config?: ProviderConfig) => {
     try {
-      const finalConfig = { ...getDefaultConfig(type), ...config };
+      // 获取最终配置
+      const finalConfig = getFinalConfig(type, config);
       const provider = createProvider(type, finalConfig);
       
       // 更新状态，保留models列表但清空当前选中的模型，重置连接状态
@@ -142,10 +168,19 @@ export function useProvider() {
         connectedModel: null
       }));
       
-      // 保存配置
+      // 保存配置到 ref 和状态
       configRef.current = finalConfig;
+      setConfigState(finalConfig);
+      
+      // 保存 Provider 类型
       saveToStorage(STORAGE.TYPE, type);
-      saveToStorage(STORAGE.CONFIG, finalConfig);
+      
+      // 保存当前 Provider 的配置到专用存储键
+      if (config) {
+        saveToStorage(getProviderStorageKey(type), config);
+      }
+      
+      // 清空模型选择
       saveToStorage(STORAGE.MODEL, null);
       
       // 清除连接状态的存储
@@ -167,6 +202,7 @@ export function useProvider() {
     setState(prev => ({ ...prev, isModelLoading: true })); // 使用独立的模型加载状态
     
     try {
+      // 使用当前 Provider 的配置来获取模型列表
       const result = await state.provider.listModels();
       if (result.success && result.data) {
         const models = result.data.models;
@@ -264,9 +300,12 @@ export function useProvider() {
       const updatedConfig = { ...configRef.current, ...newConfig };
       configRef.current = updatedConfig;
       setConfigState(updatedConfig); // 更新状态以触发重新渲染
-      saveToStorage(STORAGE.CONFIG, updatedConfig);
+      
+      // 保存当前 Provider 的配置到专用存储键
+      saveToStorage(getProviderStorageKey(state.type), updatedConfig);
+      
       console.log('[Provider] Config updated');
-    }, []),
+    }, [state.type]),
     loadModels,
     switchModel,
     testConnection,
