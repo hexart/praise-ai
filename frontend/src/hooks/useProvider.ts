@@ -92,6 +92,9 @@ export function useProvider() {
 
   // 配置使用 ref - 避免不必要的重渲染
   const configRef = useRef<ProviderConfig>(getDefaultConfig(state.type));
+  
+  // 添加一个状态来跟踪配置变化，确保组件能正确重新渲染
+  const [configState, setConfigState] = useState<ProviderConfig>(getDefaultConfig(state.type));
 
   // 错误处理 - 简单直接，不要复杂的日志系统
   const setError = useCallback((error: string) => {
@@ -243,7 +246,7 @@ export function useProvider() {
     // 状态
     provider: state.provider,
     providerType: state.type,
-    config: configRef.current,
+    config: configState, // 使用状态而不是ref，确保组件能正确重新渲染
     isLoading: state.isLoading, // Provider 初始化加载状态
     isModelLoading: state.isModelLoading, // 模型列表加载状态
     error: state.error,
@@ -260,6 +263,7 @@ export function useProvider() {
     updateConfig: useCallback((newConfig: Partial<ProviderConfig>) => {
       const updatedConfig = { ...configRef.current, ...newConfig };
       configRef.current = updatedConfig;
+      setConfigState(updatedConfig); // 更新状态以触发重新渲染
       saveToStorage(STORAGE.CONFIG, updatedConfig);
       console.log('[Provider] Config updated');
     }, []),
