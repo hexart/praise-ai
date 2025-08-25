@@ -70,18 +70,21 @@ export const InputArea: React.FC<InputAreaProps> = ({
       case 'praise':
         return {
           color: 'border-yellow-300 focus:border-yellow-500',
+          darkColor: 'dark:border-yellow-500 dark:focus:border-yellow-400',
           placeholder: '分享你的成就或需要鼓励的事情...',
           icon: '🌟'
         };
       case 'comfort':
         return {
           color: 'border-pink-300 focus:border-pink-500',
+          darkColor: 'dark:border-pink-500 dark:focus:border-pink-400',
           placeholder: '说出你的心声，我会陪伴你...',
           icon: '💕'
         };
       default:
         return {
           color: 'border-purple-300 focus:border-purple-500',
+          darkColor: 'dark:border-purple-500 dark:focus:border-purple-400',
           placeholder: '告诉我你的想法，我会智能回应...',
           icon: '🤖'
         };
@@ -91,14 +94,15 @@ export const InputArea: React.FC<InputAreaProps> = ({
   const isOverLimit = value.length > maxLength;
   const canSend = value.trim() && !disabled && !isOverLimit;
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white p-4">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
         {/* 输入框容器 */}
         <div
           className={`
             relative bg-white border rounded-2xl shadow-sm transition-all duration-200
-            ${isFocused ? `${modeConfig.color} ring-1 ring-opacity-20` : 'border-gray-300'}
-            ${isOverLimit ? 'border-red-300' : ''}
+            ${isFocused ? `${modeConfig.color} ring-1 ring-opacity-20 ${modeConfig.darkColor}` : 'border-gray-300 dark:border-gray-600'}
+            ${isOverLimit ? 'border-red-300 dark:border-red-500' : ''}
+            dark:bg-gray-800
           `}
         >
           {/* 主输入区域 */}
@@ -121,13 +125,14 @@ export const InputArea: React.FC<InputAreaProps> = ({
               focus:outline-none text-gray-900 placeholder-gray-500
               min-h-[48px] max-h-[120px] leading-6
               ${disabled ? 'cursor-not-allowed opacity-50' : ''}
+              dark:text-gray-100 dark:placeholder-gray-400
             `}
                 style={{ scrollbarWidth: 'thin' }}
               />
 
               {/* 字符计数 */}
               {value.length > maxLength * 0.8 && (
-                <div className={`absolute bottom-2 right-4 text-xs ${isOverLimit ? 'text-red-500' : 'text-gray-400'
+                <div className={`absolute bottom-2 right-4 text-xs ${isOverLimit ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
                   }`}>
                   {value.length}/{maxLength}
                 </div>
@@ -141,7 +146,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
               <button
                 onClick={handleEmojiClick}
                 disabled={disabled}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700"
                 title="添加表情"
               >
                 <Smile className="w-4 h-4" />
@@ -152,8 +157,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
                 onClick={handleVoiceToggle}
                 disabled={disabled}
                 className={`p-2 rounded-lg transition-colors ${isRecording
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  ? 'text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-800/50'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
                   }`}
                 title={isRecording ? '停止录音' : '语音输入'}
               >
@@ -178,7 +183,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
         </div>
 
         {/* 底部提示信息 */}
-        <div className="mt-3 px-2 flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-3 px-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center space-x-4">
 
             {/* 当前模式提示 */}
@@ -201,7 +206,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
             )}
 
             {disabled && (
-              <span className="text-amber-500">AI正在回复中...</span>
+              <span className="text-amber-500 dark:text-amber-400">AI正在回复中...</span>
             )}
           </div>
         </div>
@@ -209,7 +214,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
         {/* 字符超限警告 */}
         {isOverLimit && (
           <div className="mt-2 text-center">
-            <span className="text-xs text-red-500 bg-red-50 px-3 py-1 rounded-full">
+            <span className="text-xs text-red-500 bg-red-50 px-3 py-1 rounded-full dark:bg-red-900/30">
               输入内容过长，请控制在 {maxLength} 字符以内
             </span>
           </div>
@@ -217,7 +222,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
         {/* 使用提示 */}
         <div className="mt-3 text-center">
-          <p className="text-xs text-gray-400 leading-relaxed">
+          <p className="text-xs text-gray-400 leading-relaxed dark:text-gray-500">
             本AI助手旨在提供情感支持，不构成专业心理或医疗建议
           </p>
         </div>

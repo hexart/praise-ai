@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { ModalProps } from '../../types/ui';
@@ -47,22 +46,23 @@ export const Modal: React.FC<ModalProps> = ({
           className={`
             relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl
             transform transition-all duration-200 scale-100 opacity-100
+            dark:bg-gray-800
           `}
           onClick={(e) => e.stopPropagation()}
         >
           {/* 头部 */}
-          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
             {title && (
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {title}
               </h3>
             )}
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors dark:hover:bg-gray-700"
               aria-label="关闭"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
           </div>      {/* 内容 */}
           <div className="p-6">

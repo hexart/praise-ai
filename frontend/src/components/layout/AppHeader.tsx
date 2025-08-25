@@ -22,10 +22,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   isConnected,
   providerName,
   messageCount,
-  isLoading = false
+  isLoading = false,
 }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* 左侧：Logo和标题 */}
@@ -35,10 +35,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 <Heart className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+                <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   舔狗&夸夸
                 </h1>
-                <p className="text-xs text-gray-500">情感支持智能助手</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">情感支持智能助手</p>
               </div>
             </div>
           </div>
@@ -50,14 +50,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <div className="flex items-center space-x-2">
               <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
                 }`} />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {isConnected ? `已连接 ${providerName}` : '未连接'}
               </span>
             </div>
 
             {/* 消息计数 */}
             {messageCount > 0 && (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                 <MessageCircle className="w-4 h-4" />
                 <span>{messageCount} 条消息</span>
               </div>
@@ -65,7 +65,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
             {/* 加载状态 */}
             {isLoading && (
-              <div className="flex items-center space-x-2 text-sm text-blue-600">
+              <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                 <span>AI思考中...</span>
               </div>
@@ -74,14 +74,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
           {/* 右侧：操作按钮 */}
           <div className="flex items-center space-x-2">
-
             {/* 统计按钮 */}
             {onStatsClick && messageCount > 0 && (
               <Button
                 onClick={onStatsClick}
                 variant="ghost"
                 size="sm"
-                className="hidden sm:flex"
+                className="dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
               >
                 <BarChart3 className="w-4 h-4" />
               </Button>
@@ -93,7 +92,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                 onClick={onClearHistory}
                 variant="ghost"
                 size="sm"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
               >
                 <Trash2 className="w-4 h-4" />
                 <span className="hidden sm:ml-2 sm:inline">清空</span>
@@ -105,7 +104,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               onClick={onSettingsClick}
               variant="ghost"
               size="sm"
-              className="text-gray-600 hover:text-gray-700"
+              className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800"
             >
               <Settings className="w-4 h-4" />
               <span className="hidden sm:ml-2 sm:inline">设置</span>
@@ -114,8 +113,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
 
         {/* 移动端状态栏 */}
-        <div className="md:hidden pb-3 border-t border-gray-100 pt-2 mt-1">
-          <div className="flex items-center justify-between text-xs text-gray-600">
+        <div className="md:hidden pb-3 border-t border-gray-100 pt-2 mt-1 dark:border-gray-800">
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
@@ -132,7 +131,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </div>
 
             {isLoading && (
-              <div className="flex items-center space-x-1 text-blue-600">
+              <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
                 <span>AI思考中...</span>
               </div>

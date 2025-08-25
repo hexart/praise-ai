@@ -16,9 +16,9 @@ interface MessageBubbleProps {
 const TypingIndicator: React.FC = () => (
 
   <div className="flex space-x-1">
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: '0ms' }} />
+    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: '150ms' }} />
+    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: '300ms' }} />
   </div>
 );
 
@@ -37,18 +37,18 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({ emotionAnalysis }) => {
   if (!emotion) return null;
   const intensityInfo = formatEmotionIntensity(intensity || 0.5);
   return (
-    <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+    <div className="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 dark:bg-purple-900/30 dark:border-purple-700">
       <div className="flex items-center space-x-2 text-xs">
-        <Brain className="w-3 h-3 text-purple-500" />
-        <span className="text-purple-700 font-medium">情感分析:</span>
-        <span className="text-gray-700">{emotion}</span>
-        <span className={`${intensityInfo.color} font-medium`}>
+        <Brain className="w-3 h-3 text-purple-500 dark:text-purple-400" />
+        <span className="text-purple-700 font-medium dark:text-purple-300">情感分析:</span>
+        <span className="text-gray-700 dark:text-gray-300">{emotion}</span>
+        <span className={`${intensityInfo.color} font-medium dark:text-gray-300`}>
           {intensityInfo.text}
         </span>
         {needs && (
           <>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">需求: {needs}</span>
+            <span className="text-gray-400 dark:text-gray-500">•</span>
+            <span className="text-gray-600 dark:text-gray-400">需求: {needs}</span>
           </>
         )}
       </div>
@@ -66,22 +66,22 @@ interface DebugInfoProps {
 const DebugInfo: React.FC<DebugInfoProps> = ({ debugInfo }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   return (
-    <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+    <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-3 py-2 flex items-center space-x-2 text-left hover:bg-gray-100 transition-colors"
+        className="w-full px-3 py-2 flex items-center space-x-2 text-left hover:bg-gray-100 transition-colors dark:hover:bg-gray-700"
       >
-        <Eye className="w-4 h-4 text-gray-500" />
-        <span className="text-sm font-medium text-gray-700">调试信息</span>
+        <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">调试信息</span>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-500 ml-auto" />
+          <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400 ml-auto" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-500 ml-auto" />
+          <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400 ml-auto" />
         )}
       </button>
       {isExpanded && (
-        <div className="px-3 py-2 border-t border-gray-200 bg-white">
-          <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto">
+        <div className="px-3 py-2 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+          <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto dark:text-gray-400">
             {debugInfo}
           </pre>
         </div>
@@ -106,7 +106,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   if (isSystem) {
     return (
       <div className="flex justify-center my-4">
-        <div className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200">
+        <div className="px-4 py-2 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
           {message.content}
         </div>
       </div>
@@ -119,7 +119,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isUser && message.mode && debugMode && (
           <div className="mb-2 flex items-center space-x-2">
             {/* 模式指示器 */}
-            <div className="inline-flex items-center space-x-1 text-xs px-2 py-1 rounded-full bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700">
+            <div className="inline-flex items-center space-x-1 text-xs px-2 py-1 rounded-full bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 dark:from-purple-900/30 dark:to-indigo-900/30 dark:text-purple-300">
               <span>{formatChatMode(message.mode).icon}</span>
               <span>{formatChatMode(message.mode).name}</span>
             </div>
@@ -137,17 +137,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         relative px-4 py-3 rounded-2xl shadow-sm
         ${isUser
               ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
-              : 'bg-white text-gray-800 border border-gray-200'
+              : 'bg-white text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700'
             }
       `}
         >
           {/* 头像指示器 */}
-          <div className={`absolute -top-4 ${isUser ? '-right-4' : '-left-4'} w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${isUser ? 'bg-sky-500' : 'bg-white border border-gray-200'
+          <div className={`absolute -top-4 ${isUser ? '-right-4' : '-left-4'} w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${isUser ? 'bg-sky-500' : 'bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700'
             }`}>
             {isUser ? (
               <User className="w-4 h-4 text-white" />
             ) : (
-              <Bot className={`w-4 h-4 ${isStreaming ? 'text-blue-500' : 'text-gray-600'}`} />
+              <Bot className={`w-4 h-4 ${isStreaming ? 'text-blue-500' : 'text-gray-600 dark:text-gray-400'}`} />
             )}
           </div>
 
@@ -156,7 +156,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             {message.content}
             {isStreaming && message.content === '' && (
               <div className="flex items-center space-x-2">
-                <span className="text-gray-500">AI正在思考</span>
+                <span className="text-gray-500 dark:text-gray-400">AI正在思考</span>
                 <TypingIndicator />
               </div>
             )}
@@ -166,7 +166,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
 
           {/* 时间戳 */}
-          <div className={`text-xs mt-2 ${isUser ? 'text-blue-100' : 'text-gray-500'}`}>
+          <div className={`text-xs mt-2 ${isUser ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
             {formatTimestamp(message.timestamp, 'absolute')}
             {isStreaming && (
               <span className="ml-2 inline-flex items-center">

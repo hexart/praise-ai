@@ -273,29 +273,29 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     <div className="space-y-6">
       {/* Provider选择 */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">选择API提供商</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">选择API提供商</h3>
         <div className="relative" data-dropdown>
           <button
             type="button"
             onClick={() => setProviderDropdownOpen(!providerDropdownOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-800"
             disabled={isLoading}
           >
             <div className="flex items-center space-x-3">
-              <div className="text-blue-600">
+              <div className="text-blue-600 dark:text-blue-400">
                 {getProviderIcon(currentProvider)}
               </div>
               <div className="text-left">
-                <div className="font-medium text-gray-900">
+                <div className="font-medium text-gray-900 dark:text-gray-100">
                   {providers.find(p => p.type === currentProvider)?.name || currentProvider}
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   {providers.find(p => p.type === currentProvider)?.description}
                 </div>
               </div>
             </div>
             <ChevronDown 
-              className={`w-5 h-5 text-gray-400 transition-transform ${
+              className={`w-5 h-5 text-gray-400 transition-transform dark:text-gray-500 ${
                 providerDropdownOpen ? 'transform rotate-180' : ''
               }`} 
             />
@@ -303,31 +303,33 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
 
           {/* 下拉菜单内容 */}
           {providerDropdownOpen && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto dark:bg-gray-800 dark:border-gray-700">
               {providers.map((provider) => (
                 <button
                   key={provider.type}
                   type="button"
                   onClick={() => handleProviderSelect(provider.type)}
                   className={`w-full flex items-start space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                    currentProvider === provider.type ? 'bg-blue-50' : ''
+                    currentProvider === provider.type 
+                      ? 'bg-blue-50 dark:bg-blue-900/30 dark:hover:bg-blue-800/50' 
+                      : 'dark:hover:bg-gray-700'
                   }`}
                 >
                   <div className={`mt-1 ${
-                    currentProvider === provider.type ? 'text-blue-600' : 'text-gray-500'
+                    currentProvider === provider.type ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
                   }`}>
                     {getProviderIcon(provider.type)}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900">{provider.name}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{provider.name}</span>
                       {currentProvider === provider.type && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full dark:bg-blue-900/50 dark:text-blue-300">
                           当前
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
                       {provider.description}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-2">
@@ -336,22 +338,22 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                           key={index}
                           className={`text-xs px-2 py-0.5 rounded ${
                             currentProvider === provider.type
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-600'
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                              : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {feature}
                         </span>
                       ))}
                       {provider.features.length > 3 && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           +{provider.features.length - 3}项
                         </span>
                       )}
                     </div>
                   </div>
                   {currentProvider === provider.type && (
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mt-1">
+                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mt-1 dark:bg-blue-500">
                       <CheckCircle className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -364,18 +366,18 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
 
       {/* 配置表单 */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">配置参数</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-gray-100">配置参数</h3>
         <div className="space-y-4">
           {/* API地址 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
               API地址
             </label>
             <input
               type="text"
               value={currentConfig.apiUrl || ''}
               onChange={(e) => onConfigUpdate({ apiUrl: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
               placeholder={
                 currentProvider === 'ollama'
                   ? 'http://localhost:8000'
@@ -383,7 +385,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
               }
               disabled={isLoading}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
               {currentProvider === 'ollama'
                 ? '本地Ollama服务的API地址（OpenAI兼容格式）'
                 : '兼容OpenAI格式的API端点地址'
@@ -394,7 +396,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
           {/* API密钥 (非Ollama) */}
           {currentProvider !== 'ollama' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
                 API密钥
               </label>
               <div className="relative">
@@ -402,189 +404,142 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                   type={showApiKey ? 'text' : 'password'}
                   value={currentConfig.apiKey || ''}
                   onChange={(e) => onConfigUpdate({ apiKey: e.target.value })}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="sk-..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10 bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                  placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                 >
-                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                API密钥仅保存在本地浏览器，不会上传到任何服务器
+              <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
+                请确保API密钥安全，不要泄露给他人
               </p>
             </div>
           )}
 
-        </div>
-      </div>
-
-      {/* 连接测试 - 移动到模型选择后显示 */}
-      {/* 此部分已被移动到模型管理部分 */}
-
-      {/* 模型管理 */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">模型管理</h3>
-
-        {/* 当前模型 */}
-        {currentModel && models.length > 0 && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-            <div className="flex items-center space-x-2">
-              <Cpu className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-900">当前模型:</span>
-              <span className="text-sm text-blue-800">
-                {getModelDisplayName(models.find(m => m.id === currentModel))}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* 模型选择 */}
-        <div>
-          {!isConfigValid() ? (
-            <div className="text-center py-6 text-gray-500">
-              <Cpu className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-              <p className="text-sm">请先配置API地址和密钥</p>
-              <p className="text-xs mt-1">配置完成后可点击下拉菜单获取模型列表</p>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+          {/* 模型选择 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 选择模型
               </label>
-              <div className="relative" data-dropdown>
-                <button
-                  type="button"
-                  onClick={handleModelDropdownClick}
-                  className={`w-full flex items-center justify-between px-4 py-3 bg-white border rounded-lg transition-colors ${
-                    currentModel 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  } focus:border-blue-500 focus:ring-2 focus:ring-blue-200 ${
-                    !isConfigValid() ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={isLoading || modelSwitching || isModelLoading || !isConfigValid()}
-                >
-                  <div className="flex items-center space-x-3">
-                    {isModelLoading ? (
-                      <RefreshCw className="w-5 h-5 text-blue-600 animate-spin" />
-                    ) : (
-                      <Cpu className={`w-5 h-5 ${
-                        currentModel ? 'text-blue-600' : 'text-gray-400'
-                      }`} />
-                    )}
-                    <div className="text-left">
-                      {isModelLoading ? (
-                        <div className="text-blue-600">正在刷新模型...</div>
-                      ) : !isConfigValid() ? (
-                        <div className="text-gray-500">请先填写API地址和密钥</div>
-                      ) : currentModel ? (
-                        <>
-                          <div className="font-medium text-gray-900">
-                            {models.find(m => m.id === currentModel)?.name || currentModel}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {getModelDisplayName(models.find(m => m.id === currentModel))}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-gray-500">请选择模型</div>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-gray-400 transition-transform ${
-                      modelDropdownOpen ? 'transform rotate-180' : ''
-                    }`} 
-                  />
-                </button>
-
-                {/* 模型下拉菜单内容 */}
-                {modelDropdownOpen && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
-                    {models.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500">
-                        <Cpu className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm">暂无可用模型</p>
-                        <p className="text-xs mt-1">请检查API配置或稍后重试</p>
-                      </div>
-                    ) : (
-                      models.map((model) => (
-                        <button
-                          key={model.id}
-                          type="button"
-                          onClick={() => handleModelSwitch(model.id)}
-                          disabled={modelSwitching}
-                          className={`w-full flex items-start space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                            currentModel === model.id ? 'bg-blue-50' : ''
-                          }`}
-                        >
-                          <Cpu className={`w-5 h-5 mt-0.5 ${
-                            currentModel === model.id ? 'text-blue-600' : 'text-gray-400'
-                          }`} />
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium text-gray-900">{model.name}</span>
-                              {currentModel === model.id && (
-                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                  使用中
-                                </span>
-                              )}
-                            </div>
-                            {model.description && (
-                              <p className="text-sm text-gray-600 mt-1">{model.description}</p>
-                            )}
-                            <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
-                              {model.family && <span>系列: {model.family}</span>}
-                              {model.parameter_size && <span>参数: {model.parameter_size}</span>}
-                            </div>
-                          </div>
-                          {currentModel === model.id && (
-                            <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                          )}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
+              <Button
+                onClick={handleLoadModels}
+                disabled={isModelLoading || !isConfigValid()}
+                variant="ghost"
+                size="sm"
+                className="text-xs px-2 py-1 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${isModelLoading ? 'animate-spin' : ''}`} />
+                刷新
+              </Button>
             </div>
-          )}
-        </div>
-        
-        {/* 模型测试连接按钮 - 只在选中模型后显示 */}
-        {currentModel && models.length > 0 && (
-          <div className="mt-4">
+            <div className="relative" data-dropdown>
+              <button
+                type="button"
+                onClick={handleModelDropdownClick}
+                disabled={isModelLoading || !isConfigValid() || isLoading}
+                className="w-full flex items-center justify-between px-3 py-2 bg-white border border-gray-300 rounded-md hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-left dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:ring-blue-800"
+              >
+                <span className="text-sm text-gray-900 truncate dark:text-gray-100">
+                  {currentModel 
+                    ? getModelDisplayName(models.find(m => m.id === currentModel))
+                    : '请选择模型 (共 0 个可用)'
+                  }
+                </span>
+                <ChevronDown 
+                  className={`w-4 h-4 text-gray-400 transition-transform dark:text-gray-500 ${
+                    modelDropdownOpen ? 'transform rotate-180' : ''
+                  }`} 
+                />
+              </button>
+
+              {/* 模型下拉菜单 */}
+              {modelDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto dark:bg-gray-800 dark:border-gray-700">
+                  {isModelLoading ? (
+                    <div className="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center justify-center space-x-2">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>加载模型中...</span>
+                      </div>
+                    </div>
+                  ) : models.length > 0 ? (
+                    models.map((model) => (
+                      <button
+                        key={model.id}
+                        type="button"
+                        onClick={() => handleModelSwitch(model.id)}
+                        disabled={modelSwitching}
+                        className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors ${
+                          currentModel === model.id 
+                            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-800/50 dark:text-blue-300' 
+                            : 'text-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <div className="font-medium">{model.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {model.family && `${model.family}${model.parameter_size ? `, ${model.parameter_size}` : ''}`}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center justify-center space-x-2">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>暂无可用模型</span>
+                      </div>
+                      <p className="text-xs mt-1">请检查API配置是否正确</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
+              选择要使用的AI模型
+            </p>
+          </div>
+
+          {/* 测试连接按钮 */}
+          <div className="pt-2">
             <Button
               onClick={handleTestConnection}
-              disabled={!isConfigValid() || testStatus === 'testing' || isLoading}
-              loading={testStatus === 'testing'}
-              variant={testStatus === 'success' ? 'success' : testStatus === 'error' ? 'danger' : 'primary'}
+              disabled={testStatus === 'testing' || !currentModel || isLoading}
+              variant="primary"
               className="w-full"
             >
-              {testStatus === 'testing' ? '测试中...' : '测试连接'}
+              {testStatus === 'testing' ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  测试中...
+                </>
+              ) : (
+                <>
+                  <Cpu className="w-4 h-4 mr-2" />
+                  测试连接
+                </>
+              )}
             </Button>
-            
-            {/* 测试结果 */}
+
+            {/* 测试结果提示 */}
             {testMessage && (
-              <div className={`mt-3 p-3 rounded-lg border flex items-center space-x-2 ${
-                testStatus === 'success'
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : testStatus === 'error'
-                    ? 'bg-red-50 border-red-200 text-red-800'
-                    : 'bg-blue-50 border-blue-200 text-blue-800'
+              <div className={`mt-2 p-2 rounded-md text-sm ${
+                testStatus === 'success' 
+                  ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' 
+                  : testStatus === 'error' 
+                    ? 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' 
+                    : 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
               }`}>
-                {testStatus === 'success' && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
-                {testStatus === 'error' && <AlertCircle className="w-4 h-4 flex-shrink-0" />}
-                <span className="text-sm">{testMessage}</span>
+                {testMessage}
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

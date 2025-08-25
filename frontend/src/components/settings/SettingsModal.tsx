@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { ThemeToggle } from '../ui/ThemeToggle';
 import { ProviderSettings } from './ProviderSettings';
 import type { ProviderType, ProviderConfig } from '../../types/provider';
 import type { ChatMode } from '../../types/chat';
@@ -101,6 +102,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     { id: 'data' as TabType, name: '数据管理', icon: Download },
     { id: 'about' as TabType, name: '关于', icon: User }
   ];
+
   // 处理数据导出
   const handleExportData = () => {
     try {
@@ -144,23 +146,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     };
     reader.readAsText(file);
   };
-  
+
   // 渲染重置确认内容
   const renderResetConfirm = () => (
     <div className="space-y-6">
       <div className="flex items-start space-x-3">
         <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="font-medium text-gray-900">您确定要重置所有数据吗？</h3>
-          <p className="text-sm text-gray-600 mt-1">
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">您确定要重置所有数据吗？</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             此操作无法撤销，请谨慎操作。
           </p>
         </div>
       </div>
 
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <h4 className="font-medium text-red-900 mb-2">将被清除的数据包括：</h4>
-        <ul className="text-sm text-red-700 space-y-1">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/30 dark:border-red-800">
+        <h4 className="font-medium text-red-900 mb-2 dark:text-red-100">将被清除的数据包括：</h4>
+        <ul className="text-sm text-red-700 space-y-1 dark:text-red-300">
           <li>• 所有聊天记录和对话历史</li>
           <li>• 个人设置和偏好配置</li>
           <li>• 情感分析历史数据</li>
@@ -187,7 +189,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title="设置" size="xl">
       <div className="flex h-128">
         {/* 侧边栏 */}
-        <div className="w-48 border-r border-gray-200 pr-4">
+        <div className="w-48 border-r border-gray-200 pr-4 dark:border-gray-700">
           <nav className="space-y-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -196,10 +198,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-colors text-left
+                w-full flex items-center space-x-2 px-3 py-2 text-sm rounded-lg transition-all duration-200 text-left
                 ${activeTab === tab.id
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
                     }
               `}
                 >
@@ -213,42 +215,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* 主内容区 */}
         <div className="flex-1 pl-6 overflow-y-auto">
-
           {/* API配置 */}
           {activeTab === 'provider' && (
-            <ProviderSettings
-              providers={providers}
-              currentProvider={currentProvider}
-              currentConfig={currentConfig}
-              onProviderChange={onProviderChange}
-              onConfigUpdate={onConfigUpdate}
-              onTestConnection={onTestConnection}
-              models={models}
-              currentModel={currentModel}
-              onModelSwitch={onModelSwitch}
-              onLoadModels={onLoadModels}
-              onSetConnectionStatus={onSetConnectionStatus}
-              isLoading={isLoading}
-              isModelLoading={isModelLoading}
-            />
+            <div className="transition-all duration-300 ease-in-out opacity-100 transform translate-y-0">
+              <ProviderSettings
+                providers={providers}
+                currentProvider={currentProvider}
+                currentConfig={currentConfig}
+                onProviderChange={onProviderChange}
+                onConfigUpdate={onConfigUpdate}
+                onTestConnection={onTestConnection}
+                models={models}
+                currentModel={currentModel}
+                onModelSwitch={onModelSwitch}
+                onLoadModels={onLoadModels}
+                onSetConnectionStatus={onSetConnectionStatus}
+                isLoading={isLoading}
+                isModelLoading={isModelLoading}
+              />
+            </div>
           )}
 
           {/* 应用设置 */}
           {activeTab === 'app' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">应用设置</h3>
-
+            <div className="space-y-6 transition-all duration-300 ease-in-out opacity-100 transform translate-y-0">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">应用设置</h3>
               <div className="space-y-4">
+                {/* 主题设置 */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-700 transition-colors duration-200">
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">主题设置</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      选择应用的主题模式
+                    </p>
+                  </div>
+                  <ThemeToggle />
+                </div>
 
                 {/* 默认模式 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     默认聊天模式
                   </label>
                   <select
                     value={settings.defaultMode}
                     onChange={(e) => onSettingsUpdate({ defaultMode: e.target.value as ChatMode })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 transition-colors duration-200"
                   >
                     <option value="smart">智能模式</option>
                     <option value="praise">夸夸模式</option>
@@ -257,10 +269,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* 自动保存 */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-700 transition-colors duration-200">
                   <div>
-                    <span className="font-medium text-gray-900">自动保存聊天记录</span>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">自动保存聊天记录</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       自动保存聊天历史到本地存储
                     </p>
                   </div>
@@ -271,13 +283,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => onSettingsUpdate({ autoSave: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
                   </label>
                 </div>
 
                 {/* 历史记录长度 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     最大历史记录数量: {settings.maxHistoryLength}
                   </label>
                   <input
@@ -287,22 +299,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     step="10"
                     value={settings.maxHistoryLength}
                     onChange={(e) => onSettingsUpdate({ maxHistoryLength: parseInt(e.target.value) })}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:dark:bg-blue-500 [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:dark:bg-blue-500 transition-colors duration-200"
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-gray-500 mt-1 dark:text-gray-400">
                     <span>10</span>
                     <span>100</span>
                   </div>
                 </div>
 
                 {/* 调试模式 */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-700 transition-colors duration-200">
                   <div>
                     <div className="flex items-center space-x-2">
-                      <Bug className="w-4 h-4 text-gray-600" />
-                      <span className="font-medium text-gray-900">调试模式</span>
+                      <Bug className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <span className="font-medium text-gray-900 dark:text-gray-100">调试模式</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       显示情感分析结果和AI思考过程
                     </p>
                   </div>
@@ -313,26 +325,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => onSettingsUpdate({ debugMode: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:bg-gray-700 dark:peer-focus:ring-blue-800"></div>
                   </label>
                 </div>
-
-
               </div>
             </div>
           )}
 
           {/* 数据管理 */}
           {activeTab === 'data' && (
-            <div className="space-y-6">
+            <div className="space-y-6 transition-all duration-300 ease-in-out opacity-100 transform translate-y-0">
               {!showResetConfirm ? (
                 <>
-                  <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">数据管理</h3>
 
                   {/* 导出数据 */}
-                  <div className="p-4 border border-gray-200 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-2">导出数据</h4>
-                    <p className="text-sm text-gray-600 mb-3">
+                  <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800">
+                    <h4 className="font-medium text-gray-900 mb-2 dark:text-gray-100">导出数据</h4>
+                    <p className="text-sm text-gray-600 mb-3 dark:text-gray-400">
                       导出所有聊天记录、设置和配置到JSON文件
                     </p>
                     <Button onClick={handleExportData} variant="primary" size="sm">
@@ -342,9 +352,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
 
                   {/* 导入数据 */}
-                  <div className="p-4 border border-gray-200 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-2">导入数据</h4>
-                    <p className="text-sm text-gray-600 mb-3">
+                  <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800">
+                    <h4 className="font-medium text-gray-900 mb-2 dark:text-gray-100">导入数据</h4>
+                    <p className="text-sm text-gray-600 mb-3 dark:text-gray-400">
                       从备份文件恢复数据
                     </p>
 
@@ -354,7 +364,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           type="file"
                           accept=".json"
                           onChange={handleFileImport}
-                          className="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900/30 dark:file:text-blue-300 dark:hover:file:bg-blue-800/50"
                         />
                       </div>
 
@@ -363,7 +373,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           value={importText}
                           onChange={(e) => setImportText(e.target.value)}
                           placeholder="或直接粘贴JSON数据..."
-                          className="w-full h-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full h-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                         />
                       </div>
 
@@ -380,17 +390,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
 
                   {/* 重置数据 */}
-                  <div className="flex p-4 border border-red-200 bg-red-50 rounded-lg">
+                  <div className="flex p-4 border border-red-200 bg-red-50 rounded-lg dark:border-red-700 dark:bg-red-900/30">
                     <div className='flex-1 flex'>
-                      <h4 className="font-medium text-red-900 mb-2">重置所有数据</h4>
-                      <p className="text-sm text-red-700 mb-3">
+                      <h4 className="font-medium text-red-900 mb-2 dark:text-red-100">重置所有数据</h4>
+                      <p className="text-sm text-red-700 mb-3 dark:text-red-300">
                         ⚠️ 这将删除所有聊天记录、设置和配置，且无法恢复
                       </p>
                     </div>
                     <div className="flex">
-                      <Button 
-                        onClick={() => setShowResetConfirm(true)} 
-                        variant="danger" 
+                      <Button
+                        onClick={() => setShowResetConfirm(true)}
+                        variant="danger"
                         size="sm"
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
@@ -408,35 +418,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* 关于 */}
           {activeTab === 'about' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">关于应用</h3>
+            <div className="space-y-6 transition-all duration-300 ease-in-out opacity-100 transform translate-y-0">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">关于应用</h3>
 
               <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-2">舔狗与夸夸 AI v2.0</h4>
-                  <p className="text-blue-800 text-sm leading-relaxed">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 dark:from-blue-900/30 dark:to-purple-900/30 dark:border-blue-700 dark:bg-gray-800">
+                  <h4 className="font-semibold text-blue-900 mb-2 dark:text-blue-100">舔狗与夸夸 AI v2.0</h4>
+                  <p className="text-blue-800 text-sm leading-relaxed dark:text-blue-200">
                     一个专注于情感支持的AI聊天应用，通过智能情感分析为用户提供个性化的安慰和鼓励。
                   </p>
-                  <p className='text-blue-800 text-sm leading-relaxed'>
-                    开发：<a href="mailto:hexart@126.com">hexart</a>
+                  <p className='text-blue-800 text-sm leading-relaxed dark:text-blue-200'>
+                    开发：<a href="mailto:hexart@126.com" className="text-blue-800 hover:underline dark:text-blue-200">hexart</a>
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h5 className="font-medium text-gray-900 mb-1">用户ID</h5>
-                    <p className="text-sm text-gray-600 font-mono">{userId.slice(0, 16)}...</p>
+                  <div className="p-3 bg-gray-50 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h5 className="font-medium text-gray-900 mb-1 dark:text-gray-100">用户ID</h5>
+                    <p className="text-sm text-gray-600 font-mono dark:text-gray-400">{userId.slice(0, 16)}...</p>
                   </div>
 
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h5 className="font-medium text-gray-900 mb-1">当前Provider</h5>
-                    <p className="text-sm text-gray-600">{currentProvider}</p>
+                  <div className="p-3 bg-gray-50 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-700">
+                    <h5 className="font-medium text-gray-900 mb-1 dark:text-gray-100">当前Provider</h5>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{currentProvider}</p>
                   </div>
                 </div>
 
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">功能特性</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                <div className="p-4 border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800">
+                  <h4 className="font-medium text-gray-900 mb-2 dark:text-gray-100">功能特性</h4>
+                  <ul className="text-sm text-gray-600 space-y-1 dark:text-gray-400">
                     <li>• 智能情感分析和模式推荐</li>
                     <li>• 多Provider支持（Ollama、OpenAI等）</li>
                     <li>• 本地数据存储，保护隐私</li>
@@ -445,7 +455,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </ul>
                 </div>
 
-                <div className="text-center text-xs text-gray-500">
+                <div className="text-center text-xs text-gray-500 dark:text-gray-400">
                   <p>本应用旨在探索AI技术在情绪支持领域的应用</p>
                   <p className="mt-1">请注意：本应用不替代专业心理咨询服务</p>
                 </div>

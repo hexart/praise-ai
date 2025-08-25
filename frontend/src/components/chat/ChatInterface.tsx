@@ -32,8 +32,8 @@ const NoProviderState: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSett
       <div className="text-center max-w-md">
         {/* 图标 */}
         <div className="mb-6">
-          <div className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4 dark:bg-yellow-900/30">
+            <svg className="w-10 h-10 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
@@ -41,10 +41,10 @@ const NoProviderState: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSett
         </div>
 
         {/* 标题和描述 */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-100">
           需要配置 AI 服务提供商
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-6 dark:text-gray-400">
           请先配置 AI 服务提供商和模型，然后就可以开始聊天了。
         </p>
 
@@ -52,15 +52,15 @@ const NoProviderState: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSett
         {onOpenSettings && (
           <button
             onClick={onOpenSettings}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium dark:bg-blue-700 dark:hover:bg-blue-600"
           >
             去配置
           </button>
         )}
 
         {/* 小贴士 */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs text-blue-700 leading-relaxed">
+        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800">
+          <p className="text-xs text-blue-700 leading-relaxed dark:text-blue-300">
             💡 <strong>小贴士:</strong> 支持 OpenAI、Claude、Ollama 等多种 AI 服务提供商，你可以根据需要选择最适合的方案。
           </p>
         </div>
@@ -105,27 +105,27 @@ const EmptyState: React.FC<{ selectedMode: ChatMode }> = ({ selectedMode }) => {
       <div className="text-center max-w-md">
         {/* 图标 */}
         <div className="mb-6">
-          <div className="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <MessageCircle className="w-10 h-10 text-gray-400" />
+          <div className="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4 dark:bg-gray-800">
+            <MessageCircle className="w-10 h-10 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="text-3xl mb-2">{greeting.icon}</div>
         </div>
 
         {/* 标题和描述 */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-100">
           {greeting.title}
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-6 dark:text-gray-400">
           {greeting.subtitle}
         </p>
 
         {/* 示例建议 */}
         <div className="space-y-2">
-          <p className="text-sm text-gray-500 mb-3">你可以这样开始：</p>
+          <p className="text-sm text-gray-500 mb-3 dark:text-gray-400">你可以这样开始：</p>
           {greeting.examples.map((example, index) => (
             <div
               key={index}
-              className="text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+              className="text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"
               onClick={() => {
                 // TODO: 可以实现点击填充到输入框的功能
               }}
@@ -136,8 +136,8 @@ const EmptyState: React.FC<{ selectedMode: ChatMode }> = ({ selectedMode }) => {
         </div>
 
         {/* 小贴士 */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs text-blue-700 leading-relaxed">
+        <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/30 dark:border-blue-800">
+          <p className="text-xs text-blue-700 leading-relaxed dark:text-blue-300">
             💡 <strong>小贴士:</strong> 尽量具体描述你的感受或情况，这样我能给出更贴心的回应
           </p>
         </div>
@@ -180,7 +180,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [streamingMessageId]);
   return (
-    <div className={`flex flex-col h-full bg-gray-50 ${className}`}>
+    <div className={`flex flex-col h-full bg-gray-50 ${className} dark:bg-gray-900`}>
       {/* 模式选择器 */}
       <ModeSelector
         selectedMode={selectedMode}
