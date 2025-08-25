@@ -84,7 +84,7 @@ export const App: React.FC = () => {
   }, []);
 
   // 处理Provider切换
-  const handleProviderChange = useCallback(async (type: ProviderType, config: ProviderConfig) => {
+  const handleProviderChange = useCallback(async (type: ProviderType, config?: ProviderConfig) => {
     try {
       const success = await provider.switchProvider(type, config);
       if (success) {

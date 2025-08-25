@@ -18,7 +18,7 @@ interface SettingsModalProps {
   }>;
   currentProvider: ProviderType;
   currentConfig: ProviderConfig;
-  onProviderChange: (type: ProviderType, config: ProviderConfig) => Promise<boolean>;
+  onProviderChange: (type: ProviderType, config?: ProviderConfig) => Promise<boolean>;
   onConfigUpdate: (config: Partial<ProviderConfig>) => void;
   onTestConnection: () => Promise<boolean>;
 
