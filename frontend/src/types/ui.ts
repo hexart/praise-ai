@@ -9,14 +9,7 @@ export interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
 }
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
-export interface ToastMessage {
-  id: string;
-  type: ToastType;
-  title: string;
-  message?: string;
-  duration?: number;
-}
+// 删除所有自定义 Toast 类型，因为我们将使用 Sonner 的 toast 系统
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;

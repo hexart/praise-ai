@@ -3,8 +3,8 @@ import { AppHeader } from './components/layout/AppHeader';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { InputArea } from './components/chat/InputArea';
 import { SettingsModal } from './components/settings/SettingsModal';
-import { ToastContainer } from './components/ui/Toast';
 import { Loading } from './components/ui/Loading';
+import { Toaster } from './components/ui/Toaster'; // 使用我们自定义的 Toaster 组件
 import { useApp } from './hooks/useApp';
 import { useToast } from './hooks/useToast';
 import type { ChatMode } from './types/chat';
@@ -33,7 +33,7 @@ export const App: React.FC = () => {
     importData
   } = useApp();
   // 使用Toast
-  const { messages: toastMessages, removeToast, toast } = useToast();
+  const { toast } = useToast();
   // 处理消息发送
   const handleSendMessage = useCallback(async () => {
     if (!currentMessage.trim() || chat.isLoading) return;
@@ -45,7 +45,9 @@ export const App: React.FC = () => {
       // toast.success('消息已发送');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '发送失败';
-      toast.error('发送失败', errorMessage);
+      toast.error('发送失败', {
+        description: errorMessage
+      });
     }
   }, [currentMessage, selectedMode, chat, toast]);
   // 处理键盘事件
@@ -63,20 +65,43 @@ export const App: React.FC = () => {
       toast.info('聊天记录已清空');
     }
   }, [chat, emotion, toast]);
+
+  // 处理模式切换
+  const handleModeChange = useCallback((mode: ChatMode) => {
+    setSelectedMode(mode);
+    
+    // 根据模式显示不同的提示信息
+    const modeNames = {
+      'smart': '智能模式',
+      'praise': '夸夸模式',
+      'comfort': '安慰模式'
+    };
+    
+    toast.info(`已切换到${modeNames[mode]}`, {
+      description: `现在使用${modeNames[mode]}回应你的消息`
+    });
+  }, [toast]);
+
   // 处理Provider切换
   const handleProviderChange = useCallback(async (type: ProviderType, config: ProviderConfig) => {
     try {
       const success = await provider.switchProvider(type, config);
       if (success) {
-        toast.success('Provider切换成功', `已切换到 ${type}`);
+        toast.success('Provider切换成功', {
+          description: `已切换到 ${type}`
+        });
         return true;
       } else {
-        toast.error('Provider切换失败', provider.error || '未知错误');
+        toast.error('Provider切换失败', {
+          description: provider.error || '未知错误'
+        });
         return false;
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '切换失败';
-      toast.error('Provider切换失败', errorMessage);
+      toast.error('Provider切换失败', {
+        description: errorMessage
+      });
       return false;
     }
   }, [provider, toast]);
@@ -87,12 +112,16 @@ export const App: React.FC = () => {
       if (success) {
         toast.success('连接测试成功');
       } else {
-        toast.error('连接测试失败', provider.error || '无法连接到服务器');
+        toast.error('连接测试失败', {
+          description: provider.error || '无法连接到服务器'
+        });
       }
       return success;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '测试失败';
-      toast.error('连接测试失败', errorMessage);
+      toast.error('连接测试失败', {
+        description: errorMessage
+      });
       return false;
     }
   }, [provider, toast]);
@@ -107,7 +136,9 @@ export const App: React.FC = () => {
       return success;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '导入失败';
-      toast.error('数据导入失败', errorMessage);
+      toast.error('数据导入失败', {
+        description: errorMessage
+      });
       return false;
     }
   }, [importData, toast]);
@@ -123,7 +154,9 @@ export const App: React.FC = () => {
   const lastErrorRef = React.useRef<string | null>(null);
   React.useEffect(() => {
     if (error && error !== lastErrorRef.current) {
-      toast.error('应用错误', error);
+      toast.error('应用错误', {
+        description: error
+      });
       lastErrorRef.current = error;
     }
   }, [error, toast]);
@@ -184,7 +217,7 @@ export const App: React.FC = () => {
         <ChatInterface
           messages={chat.chatHistory}
           selectedMode={selectedMode}
-          onModeChange={setSelectedMode}
+          onModeChange={handleModeChange}
           isLoading={chat.isLoading}
           streamingMessageId={chat.streamingMessageId}
           debugMode={settings.debugMode}
@@ -237,11 +270,8 @@ export const App: React.FC = () => {
         maxLength={2000}
       />
 
-      {/* Toast通知 */}
-      <ToastContainer
-        messages={toastMessages}
-        onRemove={removeToast}
-      />
+      {/* 使用自定义 Toaster 组件 */}
+      <Toaster />
     </div>
   );
 };
