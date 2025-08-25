@@ -132,6 +132,7 @@ export function useProvider() {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
+      // 在初始化时也使用 getFinalConfig 来确保正确读取本地存储的配置
       const config = getFinalConfig(state.type);
       const provider = createProvider(state.type, config);
       
@@ -140,6 +141,10 @@ export function useProvider() {
         provider,
         isLoading: false
       }));
+      
+      // 同时更新 ref 和状态
+      configRef.current = config;
+      setConfigState(config);
       
       console.log(`[Provider] Initialized ${state.type}`);
     } catch (error) {
@@ -175,10 +180,8 @@ export function useProvider() {
       // 保存 Provider 类型
       saveToStorage(STORAGE.TYPE, type);
       
-      // 保存当前 Provider 的配置到专用存储键
-      if (config) {
-        saveToStorage(getProviderStorageKey(type), config);
-      }
+      // 保存当前 Provider 的配置到专用存储键（无论是否有传入config参数）
+      saveToStorage(getProviderStorageKey(type), finalConfig);
       
       // 清空模型选择
       saveToStorage(STORAGE.MODEL, null);

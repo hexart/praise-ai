@@ -13,7 +13,7 @@ interface ProviderSettingsProps {
   }>;
   currentProvider: ProviderType;
   currentConfig: ProviderConfig;
-  onProviderChange: (type: ProviderType, config: ProviderConfig) => Promise<boolean>;
+  onProviderChange: (type: ProviderType, config?: ProviderConfig) => Promise<boolean>;
   onConfigUpdate: (config: Partial<ProviderConfig>) => void;
   onTestConnection: () => Promise<boolean>;
 
@@ -53,16 +53,6 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
-  // Provider 切换时不再自动加载模型
-  // useEffect(() => {
-  //   if (currentProvider && testStatus === 'success') {
-  //     const timer = setTimeout(() => {
-  //       handleLoadModels();
-  //     }, 100);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [currentProvider, testStatus]);
-
   // 点击外部关闭下拉菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -86,37 +76,8 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       return;
     }
 
-    // 为每个 Provider 类型定义默认配置
-    const defaultConfigs: Record<ProviderType, ProviderConfig> = {
-      ollama: {
-        type: 'ollama',
-        apiUrl: import.meta.env.VITE_OLLAMA_URL || 'http://localhost:8000'
-      },
-      openai: {
-        type: 'openai',
-        apiUrl: import.meta.env.VITE_OPENAI_URL || 'https://api.openai.com/v1',
-        apiKey: import.meta.env.VITE_OPENAI_KEY || ''
-      },
-      anthropic: {
-        type: 'anthropic',
-        apiUrl: import.meta.env.VITE_CLAUDE_URL || 'https://api.anthropic.com/v1',
-        apiKey: import.meta.env.VITE_CLAUDE_KEY || ''
-      },
-      gemini: {
-        type: 'gemini',
-        apiUrl: 'https://generativelanguage.googleapis.com/v1',
-        apiKey: ''
-      },
-      custom: {
-        type: 'custom',
-        apiUrl: '',
-        apiKey: ''
-      }
-    };
-
-    // 使用默认配置切换 Provider，让 useProvider hook 自动处理配置加载
-    const newConfig = defaultConfigs[providerType];
-    const success = await onProviderChange(providerType, newConfig);
+    // 不传递具体的配置，让 useProvider hook 根据 Provider 类型自动加载配置
+    const success = await onProviderChange(providerType);
 
     if (success) {
       // 不再设置成功状态，不触发自动加载模型

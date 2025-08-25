@@ -39,20 +39,6 @@ export abstract class BaseProvider implements IProvider {
   }
 
   /**
-  获取当前模型
-  */
-  getCurrentModel(): string | null {
-    return this.currentModel;
-  }
-
-  /**
-  获取连接状态
-  */
-  getConnectionStatus(): boolean {
-    return this.isConnected;
-  }
-
-  /**
   构建请求头
   */
   protected buildHeaders(): Record<string, string> {
@@ -69,6 +55,24 @@ export abstract class BaseProvider implements IProvider {
   }
 
   /**
+  构建请求URL，支持代理配置
+  */
+  protected buildUrl(endpoint: string): string {
+    // 如果配置了代理URL，则使用代理
+    if (this.config.proxyUrl) {
+      // 代理URL应该包含原始API URL和端点作为查询参数或路径参数
+      // 这里我们使用查询参数的方式
+      const originalUrl = `${this.config.apiUrl.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+      // 简单的URL编码
+      const encodedOriginalUrl = encodeURIComponent(originalUrl);
+      return `${this.config.proxyUrl}?url=${encodedOriginalUrl}`;
+    }
+    
+    // 否则使用直接URL
+    return `${this.config.apiUrl.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+  }
+
+  /**
   发送HTTP请求
   */
   protected async request<T>(
@@ -76,7 +80,7 @@ export abstract class BaseProvider implements IProvider {
     options: RequestInit = {}
   ): Promise<APIResponse<T>> {
     try {
-      const url = `${this.config.apiUrl.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+      const url = this.buildUrl(endpoint);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.config.timeout || 30000);
       
@@ -160,6 +164,20 @@ export abstract class BaseProvider implements IProvider {
   验证配置（子类实现）
   */
   protected abstract validateConfig(): string | null;
+
+  /**
+   * 获取当前模型
+   */
+  getCurrentModel(): string | null {
+    return this.currentModel;
+  }
+
+  /**
+   * 获取连接状态
+   */
+  getConnectionStatus(): boolean {
+    return this.isConnected;
+  }
 
   // 抽象方法 - 子类必须实现
   abstract testConnection(): Promise<APIResponse<ConnectionTestResponse>>;
