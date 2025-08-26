@@ -1,3 +1,6 @@
+---
+trigger: manual
+---
 # Praise-AI 项目开发规则
 
 ## 项目概述
