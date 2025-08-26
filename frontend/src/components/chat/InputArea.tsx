@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, MicOff, Smile } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { ChatMode } from '../../types/chat';
+import { formatChatMode } from '../../utils/formatters';
 
 interface InputAreaProps {
   value: string;
@@ -188,8 +189,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
             {/* 当前模式提示 */}
             <span className="flex items-center space-x-1">
-              <span>{modeConfig.icon}</span>
-              <span>当前模式: {currentMode === 'smart' ? '智能' : currentMode === 'praise' ? '夸夸' : '安慰'}</span>
+              <span>{formatChatMode(currentMode).icon}</span>
+              <span>{formatChatMode(currentMode).name}</span>
             </span>
 
             {/* 快捷键提示 */}

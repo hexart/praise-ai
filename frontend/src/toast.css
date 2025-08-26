@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+/* 亮色主题 */
+@layer utilities {
+  /* 所有 toast 添加背景模糊效果 */
+  [data-sonner-toast] {
+    @apply backdrop-blur-md;
+  }
+
+  /* Loading */
+  [data-sonner-toast][data-type="loading"] {
+    @apply !bg-white/60 !border-gray-100 !text-gray-700;
+  }
+  .dark [data-sonner-toast][data-type="loading"] {
+    @apply !bg-gray-900/60 !border-gray-800 !text-gray-300;
+  }
+
+  /* Success */
+  [data-sonner-toast][data-type="success"] {
+    @apply !bg-emerald-50/60 !border-emerald-200/80 !text-emerald-900;
+  }
+  .dark [data-sonner-toast][data-type="success"] {
+    @apply !bg-emerald-950/60 !border-emerald-900/60 !text-emerald-100;
+  }
+
+  /* Error */
+  [data-sonner-toast][data-type="error"] {
+    @apply !bg-red-50/60 !border-red-200 !text-red-900;
+  }
+  .dark [data-sonner-toast][data-type="error"] {
+    @apply !bg-red-950/60 !border-red-950 !text-red-100;
+  }
+
+  /* Warning */
+  [data-sonner-toast][data-type="warning"] {
+    @apply !bg-amber-50/60 !border-amber-200 !text-amber-900;
+  }
+  .dark [data-sonner-toast][data-type="warning"] {
+    @apply !bg-amber-950/60 !border-amber-900/80 !text-amber-100;
+  }
+
+  /* Info */
+  [data-sonner-toast][data-type="info"] {
+    @apply !bg-blue-50/60 !border-blue-200 !text-blue-900;
+  }
+  .dark [data-sonner-toast][data-type="info"] {
+    @apply !bg-blue-950/60 !border-blue-900/80 !text-blue-100;
+  }
+
+  /* Default (没有特定类型时) */
+  [data-sonner-toast]:not([data-type]) {
+    @apply !bg-white/60 !border-gray-100 !text-gray-700;
+  }
+  .dark [data-sonner-toast]:not([data-type]) {
+    @apply !bg-gray-900/60 !border-gray-800 !text-gray-300;
+  }
+
+  /* 调整图标颜色以匹配文本颜色 */
+  [data-sonner-toast][data-type="success"] [data-icon] {
+    @apply !text-emerald-600;
+  }
+  .dark [data-sonner-toast][data-type="success"] [data-icon] {
+    @apply !text-emerald-400;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-icon] {
+    @apply !text-red-600;
+  }
+  .dark [data-sonner-toast][data-type="error"] [data-icon] {
+    @apply !text-red-400;
+  }
+
+  [data-sonner-toast][data-type="warning"] [data-icon] {
+    @apply !text-amber-600;
+  }
+  .dark [data-sonner-toast][data-type="warning"] [data-icon] {
+    @apply !text-amber-400;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-icon] {
+    @apply !text-blue-600;
+  }
+  .dark [data-sonner-toast][data-type="info"] [data-icon] {
+    @apply !text-blue-400;
+  }
+
+}

@@ -2,6 +2,7 @@
 数据格式化工具类
 提供各种数据的格式化功能
 */
+import { MODE_CONFIGS } from '../constants/modes';
 
 /**
 格式化时间戳为可读时间
@@ -129,36 +130,21 @@ export function formatEmotionIntensity(intensity: number): {
 */
 export function formatChatMode(mode: string): {
   name: string;
+  subtitle: string;
   icon: string;
   color: string;
   description: string;
+  examples: readonly string[];
 } {
-  const modeMap = {
-    'praise': {
-      name: '夸夸模式',
-      icon: '🌟',
-      color: 'text-yellow-600',
-      description: '发现亮点，积极鼓励'
-    },
-    'comfort': {
-      name: '安慰模式',
-      icon: '💕',
-      color: 'text-pink-600',
-      description: '温暖陪伴，情感支持'
-    },
-    'smart': {
-      name: '智能模式',
-      icon: '🤖',
-      color: 'text-purple-600',
-      description: '智能分析，自适应回应'
-    }
-  };
+  const config = MODE_CONFIGS[mode as keyof typeof MODE_CONFIGS];
 
-  return modeMap[mode as keyof typeof modeMap] || {
-    name: '未知模式',
-    icon: '❓',
-    color: 'text-gray-600',
-    description: '未知模式'
+  return {
+    name: config.name,
+    subtitle: config.subtitle,
+    icon: config.emoji,
+    color: config.color,
+    description: config.description,
+    examples: config.examples
   };
 }
 

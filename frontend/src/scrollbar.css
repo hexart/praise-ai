@@ -1,0 +1,44 @@
+/* scrollbar.css - 全局滚动条样式 */
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+@layer components {
+
+    /* 自定义滚动条样式 */
+    ::-webkit-scrollbar {
+        @apply w-1 bg-transparent;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-500/30 rounded-full;
+    }
+
+    /* 当悬停在滑块上时改变样式来模拟变宽效果 */
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-500/40;
+    }
+
+    /* 隐藏水平滚动条 */
+    ::-webkit-scrollbar-horizontal {
+        display: none;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar,
+    .overflow-x-auto::-webkit-scrollbar {
+        @apply w-1 h-1;
+    }
+}
+
+:root[prefers-color-scheme="dark"] {
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-600;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-600;
+    }
+}

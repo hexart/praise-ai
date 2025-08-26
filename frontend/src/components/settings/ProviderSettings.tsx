@@ -388,7 +388,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
             <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">
               {currentProvider === 'ollama'
                 ? '本地Ollama服务的API地址（OpenAI兼容格式）'
-                : '兼容OpenAI格式的API端点地址'
+                : '兼容OpenAI格式的API端点地址，确保以“/v1”结尾'
               }
             </p>
           </div>

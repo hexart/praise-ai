@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { MessageBubble } from './MessageBubble';
 import { ModeSelector } from './ModeSelector';
 import type { ChatMessage, ChatMode } from '../../types/chat';
+import { formatChatMode } from '../../utils/formatters';
 
 interface ChatInterfaceProps {
   // 聊天数据
@@ -73,33 +74,6 @@ const NoProviderState: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSett
 空状态组件
 */
 const EmptyState: React.FC<{ selectedMode: ChatMode }> = ({ selectedMode }) => {
-  const getModeGreeting = (mode: ChatMode) => {
-    switch (mode) {
-      case 'praise':
-        return {
-          icon: '🌟',
-          title: '夸夸模式已启用',
-          subtitle: '分享你的成就，让我发现你的闪光点！',
-          examples: ['我今天完成了一个项目', '我学会了新技能', '我帮助了朋友']
-        };
-      case 'comfort':
-        return {
-          icon: '💕',
-          title: '安慰模式已启用',
-          subtitle: '说出你的心声，我会陪伴和理解你',
-          examples: ['今天有点累', '遇到了困难', '心情不太好']
-        };
-      default:
-        return {
-          icon: '🤖',
-          title: '智能模式已启用',
-          subtitle: 'AI会自动分析你的情感，提供最合适的回应',
-          examples: ['今天过得怎么样？', '想聊聊最近的事', '有什么想法分享']
-        };
-    }
-  };
-
-  const greeting = getModeGreeting(selectedMode);
   return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="text-center max-w-md">
@@ -108,21 +82,21 @@ const EmptyState: React.FC<{ selectedMode: ChatMode }> = ({ selectedMode }) => {
           <div className="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4 dark:bg-gray-800">
             <MessageCircle className="w-10 h-10 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-3xl mb-2">{greeting.icon}</div>
+          <div className="text-3xl mb-2">{formatChatMode(selectedMode).icon}</div>
         </div>
 
         {/* 标题和描述 */}
         <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-100">
-          {greeting.title}
+          {formatChatMode(selectedMode).name}已启用
         </h3>
         <p className="text-gray-600 mb-6 dark:text-gray-400">
-          {greeting.subtitle}
+          {formatChatMode(selectedMode).subtitle}
         </p>
 
         {/* 示例建议 */}
         <div className="space-y-2">
           <p className="text-sm text-gray-500 mb-3 dark:text-gray-400">你可以这样开始：</p>
-          {greeting.examples.map((example, index) => (
+          {formatChatMode(selectedMode).examples.map((example, index) => (
             <div
               key={index}
               className="text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"

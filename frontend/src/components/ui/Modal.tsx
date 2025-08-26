@@ -46,7 +46,7 @@ export const Modal: React.FC<ModalProps> = ({
           className={`
             relative w-full ${sizeClasses[size]} bg-white rounded-lg shadow-xl
             transform transition-all duration-200 scale-100 opacity-100
-            dark:bg-gray-800
+            dark:bg-gray-900
           `}
           onClick={(e) => e.stopPropagation()}
         >

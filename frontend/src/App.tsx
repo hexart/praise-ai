@@ -10,6 +10,7 @@ import { initializeTheme } from './hooks/useTheme';
 import { toast } from 'sonner';
 import type { ChatMode } from './types/chat';
 import type { ProviderType, ProviderConfig } from './types/provider';
+import { MODE_CONFIGS } from './constants/modes';
 
 initializeTheme();
 /**
@@ -72,16 +73,9 @@ export const App: React.FC = () => {
   // 处理模式切换
   const handleModeChange = useCallback((mode: ChatMode) => {
     setSelectedMode(mode);
-
-    // 根据模式显示不同的提示信息
-    const modeNames = {
-      'smart': '智能模式',
-      'praise': '夸夸模式',
-      'comfort': '安慰模式'
-    };
-
-    toast.info(`已切换到${modeNames[mode]}`, {
-      description: `现在使用${modeNames[mode]}回应你的消息`
+    
+    toast.info(`已切换到${MODE_CONFIGS[mode].name}`, {
+      description: `${MODE_CONFIGS[mode].description}`
     });
   }, []);
 

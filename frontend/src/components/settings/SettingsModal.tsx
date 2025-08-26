@@ -6,6 +6,7 @@ import { ThemeToggle } from '../ui/ThemeToggle';
 import { ProviderSettings } from './ProviderSettings';
 import type { ProviderType, ProviderConfig } from '../../types/provider';
 import type { ChatMode } from '../../types/chat';
+import { MODE_CONFIGS } from '../../constants/modes';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -262,9 +263,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onChange={(e) => onSettingsUpdate({ defaultMode: e.target.value as ChatMode })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 transition-colors duration-200"
                   >
-                    <option value="smart">智能模式</option>
-                    <option value="praise">夸夸模式</option>
-                    <option value="comfort">安慰模式</option>
+                    <option value="smart">{MODE_CONFIGS.smart.name}</option>
+                    <option value="praise">{MODE_CONFIGS.praise.name}</option>
+                    <option value="comfort">{MODE_CONFIGS.comfort.name}</option>
                   </select>
                 </div>
 

@@ -27,7 +27,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   return (
     <header className="fixed top-0 md:top-5 left-0 right-0 z-50 flex justify-center">
       {/* 容器wrapper - 控制最大宽度和居中 */}
-      <div className="w-full md:max-w-[960px] backdrop-blur-md bg-white/50 border-b md:border md:rounded-full border-gray-200 shadow-sm dark:bg-gray-900/50 dark:border-gray-700">
+      <div className="w-full md:max-w-[960px] backdrop-blur-md bg-white/50 border-b md:border md:rounded-full border-gray-200 shadow-sm dark:bg-gray-950/30 dark:border-gray-700">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* 左侧：Logo和标题 */}
