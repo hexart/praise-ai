@@ -70,24 +70,15 @@ export const InputArea: React.FC<InputAreaProps> = ({
     switch (mode) {
       case 'praise':
         return {
-          color: 'border-yellow-300 focus:border-yellow-500',
-          darkColor: 'dark:border-yellow-500 dark:focus:border-yellow-400',
-          placeholder: '分享你的成就或需要鼓励的事情...',
-          icon: '🌟'
+          borderColor: 'border-yellow-300 focus:border-yellow-500 dark:border-yellow-500 dark:focus:border-yellow-400',
         };
       case 'comfort':
         return {
-          color: 'border-pink-300 focus:border-pink-500',
-          darkColor: 'dark:border-pink-500 dark:focus:border-pink-400',
-          placeholder: '说出你的心声，我会陪伴你...',
-          icon: '💕'
+          borderColor: 'border-pink-300 focus:border-pink-500 dark:border-pink-500 dark:focus:border-pink-400',
         };
       default:
         return {
-          color: 'border-purple-300 focus:border-purple-500',
-          darkColor: 'dark:border-purple-500 dark:focus:border-purple-400',
-          placeholder: '告诉我你的想法，我会智能回应...',
-          icon: '🤖'
+          borderColor: 'border-purple-300 focus:border-purple-500 dark:border-purple-500 dark:focus:border-purple-400',
         };
     }
   };
@@ -100,10 +91,9 @@ export const InputArea: React.FC<InputAreaProps> = ({
         {/* 输入框容器 */}
         <div
           className={`
-            relative bg-white border rounded-2xl shadow-sm transition-all duration-200
-            ${isFocused ? `${modeConfig.color} ring-1 ring-opacity-20 ${modeConfig.darkColor}` : 'border-gray-300 dark:border-gray-600'}
+            relative bg-white dark:bg-gray-800 border rounded-2xl shadow-sm transition-all duration-200
+            ${isFocused ? `${modeConfig.borderColor}` : 'border-gray-300 dark:border-gray-600'}
             ${isOverLimit ? 'border-red-300 dark:border-red-500' : ''}
-            dark:bg-gray-800
           `}
         >
           {/* 主输入区域 */}
@@ -118,7 +108,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                 onKeyDown={handleKeyDown}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={modeConfig.placeholder}
+                placeholder={formatChatMode(currentMode).subtitle}
                 disabled={disabled}
                 rows={1}
                 className={`
