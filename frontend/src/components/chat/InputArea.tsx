@@ -23,7 +23,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   onKeyDown,
   disabled = false,
   currentMode,
-  maxLength = 2000
+  maxLength = 100
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -94,8 +94,8 @@ export const InputArea: React.FC<InputAreaProps> = ({
   const isOverLimit = value.length > maxLength;
   const canSend = value.trim() && !disabled && !isOverLimit;
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-white/50 dark:bg-gray-900/50">
+      <div className="max-w-[960px] mx-auto">
         {/* 输入框容器 */}
         <div
           className={`
@@ -221,7 +221,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
         )}
 
         {/* 使用提示 */}
-        <div className="mt-3 text-center">
+        <div className="mt-3 mb-2 text-center">
           <p className="text-xs text-gray-400 leading-relaxed dark:text-gray-500">
             本AI助手旨在提供情感支持，不构成专业心理或医疗建议
           </p>

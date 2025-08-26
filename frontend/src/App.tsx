@@ -203,7 +203,7 @@ export const App: React.FC = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pt-24 md:pt-16">
+    <div className="min-h-screen flex flex-col pt-24 md:pt-21">
       {/* 头部 */}
       <AppHeader
         onSettingsClick={() => setIsSettingsOpen(true)}

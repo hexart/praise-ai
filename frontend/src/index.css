@@ -2,3 +2,17 @@
 
 /* 关键配置：覆盖默认暗色模式行为 */
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-light: rgb(249, 250, 251);
+    --bg-dark: rgb(17, 24, 39);     /* gray-900 的RGB值 */
+  }
+  html {
+    @apply min-h-screen transition-colors duration-300 antialiased bg-gray-50;
+  }
+
+  html.dark {
+    @apply bg-gray-900;
+  }
+}

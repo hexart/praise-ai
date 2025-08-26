@@ -70,7 +70,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   const selectedConfig = modeConfigs.find(config => config.id === selectedMode);
 
   return (
-    <div className={`bg-white border-b border-gray-200 p-4 ${className} dark:bg-gray-900 dark:border-gray-700`}>
+    <div className={`mt-4 p-4 bg-white border-y border-gray-200 ${className} dark:bg-gray-800/50 dark:border-gray-700`}>
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
         <div className="text-center mb-4">
