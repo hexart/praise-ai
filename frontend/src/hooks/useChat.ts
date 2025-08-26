@@ -186,7 +186,8 @@ export function useChat({
         message,
         chatHistory,
         emotionAnalysis,
-        userId
+        userId,
+        detectedMode
       );
 
       // 记录完整的提示词和用户消息

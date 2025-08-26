@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Star, Heart, Info } from 'lucide-react';
+import { Sparkles, Star, Heart } from 'lucide-react';
 import type { ChatMode } from '../../types/chat';
 interface ModeSelectorProps {
   selectedMode: ChatMode;
@@ -67,13 +67,11 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   disabled = false,
   className = ''
 }) => {
-  const selectedConfig = modeConfigs.find(config => config.id === selectedMode);
-
   return (
     <div className={`mt-4 p-4 bg-white border-y border-gray-200 ${className} dark:bg-gray-800/50 dark:border-gray-700`}>
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
-        <div className="text-center mb-4">
+        <div className="text-center">
           {/* <h3 className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">选择AI回应模式</h3> */}
           {/* 模式按钮组 */}
           <div className="flex items-center justify-center space-x-2">
@@ -107,19 +105,9 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
           </div>
         </div>
 
-        {/* 当前模式描述 */}
-        {selectedConfig && (
-          <div className="text-center">
-            <div className="inline-flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-full text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-              <Info className="w-3 h-3" />
-              <span>{selectedConfig.description}</span>
-            </div>
-          </div>
-        )}
-
         {/* 智能模式特殊说明 */}
         {selectedMode === 'smart' && (
-          <div className="mt-3 text-center">
+          <div className="mt-4 text-center">
             <div className="inline-flex items-center space-x-1 text-xs text-purple-600 bg-purple-50 px-3 py-1 rounded-full dark:text-purple-400 dark:bg-purple-900/30">
               <Sparkles className="w-3 h-3" />
               <span>AI会自动分析你的情感状态，智能选择最合适的回应方式</span>

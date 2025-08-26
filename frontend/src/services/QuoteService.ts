@@ -150,7 +150,7 @@ export class QuoteService {
    * 根据情感和上下文智能获取引用
    */
   async getIntelligentQuote(
-    emotionAnalysis: EmotionAnalysis,
+    emotionAnalysis: EmotionAnalysis | null,
     userMessage: string,
     chatContext: string,
     userId: string,
@@ -170,31 +170,33 @@ export class QuoteService {
           chatContext,
           userId
         );
-        
+
         if (aiQuote) {
-          this.logger.info('AI引用生成成功', { 
+          this.logger.info('AI引用生成成功', {
             quoteLength: aiQuote.length,
-            emotion: emotionAnalysis.primary_emotion
+            emotion: emotionAnalysis?.primary_emotion || 'unknown'  // 使用可选链
           });
           this.markAsUsed(aiQuote, userId);
           return aiQuote;
         }
       } catch (error) {
-        this.logger.warn('AI引用生成失败，使用fallback', { 
+        this.logger.warn('AI引用生成失败，使用fallback', {
           error: error instanceof Error ? error.message : String(error)
         });
       }
     }
 
     // Fallback到硬编码引用库
-    return this.getFallbackQuote(emotionAnalysis.primary_emotion, userId);
+    // 如果没有情感分析，使用默认的混合类型
+    const emotionTypeOrCategory = emotionAnalysis?.primary_emotion || 'mixed';
+    return this.getFallbackQuote(emotionTypeOrCategory, userId);
   }
 
   /**
    * 使用大模型生成贴合情景的引用
    */
   private async generateQuoteWithLLM(
-    emotionAnalysis: EmotionAnalysis,
+    emotionAnalysis: EmotionAnalysis | null,
     userMessage: string,
     chatContext: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -212,11 +214,11 @@ export class QuoteService {
       this.logger.info('🔥 [LLM交互3] 引用生成 - 发送提示词', {
         systemPrompt,
         userPrompt: prompt,
-        emotionContext: {
+        emotionContext: emotionAnalysis ? {
           emotion: emotionAnalysis.primary_emotion,
           intensity: emotionAnalysis.intensity,
           needs: emotionAnalysis.needs
-        },
+        } : { emotion: 'unknown', note: '无情感分析' },
         userMessage: userMessage.substring(0, 100),
         contextLength: chatContext.length
       });
@@ -236,7 +238,7 @@ export class QuoteService {
           responseLength: response.data.content.length,
           model: response.data.model || '未知模型'
         });
-        
+
         const quote = this.parseQuoteResponse(response.data.content);
         if (quote) {
           this.logger.info('AI引用生成成功', { quote: quote.substring(0, 100) });
@@ -245,9 +247,9 @@ export class QuoteService {
         }
         return quote;
       }
-      
+
       return null;
-      
+
     } catch (error) {
       this.logger.error('引用生成错误', { error: error instanceof Error ? error.message : String(error) });
       return null;
@@ -258,13 +260,19 @@ export class QuoteService {
    * 构建引用生成提示词
    */
   private buildQuoteGenerationPrompt(
-    emotionAnalysis: EmotionAnalysis,
+    emotionAnalysis: EmotionAnalysis | null,
     userMessage: string,
     chatContext: string
   ): string {
-    const emotionDesc = this.getEmotionDescription(emotionAnalysis);
-    const categoryDesc = this.getCategoryDescription(emotionAnalysis.primary_emotion);
-    
+    // 如果有情感分析，使用详细描述；否则使用简化版本
+    const emotionDesc = emotionAnalysis
+      ? this.getEmotionDescription(emotionAnalysis)
+      : '未知情感状态';
+
+    const categoryDesc = emotionAnalysis
+      ? this.getCategoryDescription(emotionAnalysis.primary_emotion)
+      : '需要智慧引导和情感支持';
+
     return `请为以下情况推荐一句最贴合的名言警句：
 
 用户消息："${userMessage}"
@@ -306,7 +314,7 @@ export class QuoteService {
    */
   private getCategoryDescription(emotion: string): string {
     const category = getEmotionCategory(normalizeEmotion(emotion));
-    
+
     switch (category) {
       case 'negative':
         return '需要安慰和支持，帮助走出低谷';
@@ -325,21 +333,21 @@ export class QuoteService {
     try {
       // 移除思考标签
       const cleanContent = removeThinkTags(content);
-      
+
       // 提取JSON
       const jsonString = extractJSON(cleanContent);
       if (!jsonString) {
         throw new Error('No JSON found');
       }
-      
+
       const parsed: LLMQuoteResponse = JSON.parse(jsonString);
-      
+
       if (parsed.quote && parsed.author) {
         return `${parsed.author}说："${parsed.quote}"`;
       }
-      
+
       return null;
-      
+
     } catch (error) {
       this.logger.error('解析引用响应失败', { error: error instanceof Error ? error.message : String(error) });
       return null;
@@ -365,9 +373,9 @@ export class QuoteService {
       // 根据情感类型决定类别
       quoteCategory = this.determineQuoteCategory(emotionTypeOrCategory);
     }
-    
+
     const usageHistory = this.getUsageHistory(userId);
-    
+
     let quotePool: Quote[] = [];
     if (quoteCategory === 'mixed') {
       quotePool = [...this.quotes];

@@ -52,7 +52,7 @@ export class EmotionAnalysisService {
     try {
       const emotionPrompt = this.buildEmotionAnalysisPrompt(message);
       const systemPrompt = '你是一个情感分析API。分析用户文本的情感并返回JSON格式结果。';
-      
+
       // 记录完整的提示词
       this.logger.info('🔥 [LLM交互1] 情感分析 - 发送提示词', {
         systemPrompt,
@@ -75,7 +75,7 @@ export class EmotionAnalysisService {
           responseLength: response.data.content.length,
           model: response.data.model || '未知模型'
         });
-        
+
         const analysis = this.parseEmotionResponse(response.data.content);
         this.logger.info('情感分析完成', {
           emotion: analysis.primary_emotion,
@@ -85,9 +85,9 @@ export class EmotionAnalysisService {
         });
         return analysis;
       }
-      
+
       return this.getFallbackAnalysis(message);
-      
+
     } catch (error) {
       this.logger.error('情感分析失败', { error: error instanceof Error ? error.message : String(error) });
       return this.getFallbackAnalysis(message);
@@ -122,19 +122,20 @@ export class EmotionAnalysisService {
     try {
       // 移除思考标签
       const cleanContent = removeThinkTags(content);
-      this.logger.debug('处理LLM响应', { 
+      this.logger.debug('处理LLM响应', {
         originalLength: content.length,
-        cleanLength: cleanContent.length
+        cleanLength: cleanContent.length,
+        cleanContent
       });
-      
+
       // 提取JSON
       const jsonString = extractJSON(cleanContent);
       if (!jsonString) {
         throw new Error('No JSON found');
       }
-      
+
       const parsed: LLMEmotionResponse = JSON.parse(jsonString);
-      
+
       return {
         primary_emotion: this.standardizeEmotion(parsed.primary_emotion),
         intensity: Math.max(0, Math.min(1, parsed.intensity || 0.5)),
@@ -144,9 +145,9 @@ export class EmotionAnalysisService {
         analysis_source: 'llm_analysis',
         reasoning: parsed.reasoning
       };
-      
+
     } catch (error) {
-      this.logger.error('解析情感响应失败', { error: error instanceof Error ? error.message : String(error) });
+      this.logger.error('解析情感响应失败', { error: error instanceof Error ? error.message : String(error), originalContent: content });
       // 解析失败，使用fallback
       return this.getFallbackAnalysis(content);
     }
@@ -224,17 +225,17 @@ export class EmotionAnalysisService {
    */
   recommendMode(emotionAnalysis: EmotionAnalysis): ChatMode {
     const { needs, intensity, primary_emotion } = emotionAnalysis;
-    
+
     // 基于需求
     if (needs === USER_NEEDS.COMFORT || needs === 'comfort') return 'comfort';
     if (needs === USER_NEEDS.PRAISE || needs === 'praise') return 'praise';
     if (needs === USER_NEEDS.CARE || needs === 'care') return 'smart';
-    
+
     // 基于情感类别
     const category = getEmotionCategory(normalizeEmotion(primary_emotion));
     if (category === 'negative' && intensity > 0.6) return 'comfort';
     if (category === 'positive' && intensity > 0.5) return 'praise';
-    
+
     return 'smart';
   }
 
@@ -247,10 +248,10 @@ export class EmotionAnalysisService {
     dominantEmotion: string;
   } {
     if (messages.length < 2) {
-      return { 
-        trend: 'stable', 
-        averageIntensity: 0.5, 
-        dominantEmotion: STANDARD_EMOTIONS.NEUTRAL 
+      return {
+        trend: 'stable',
+        averageIntensity: 0.5,
+        dominantEmotion: STANDARD_EMOTIONS.NEUTRAL
       };
     }
 
@@ -258,7 +259,7 @@ export class EmotionAnalysisService {
     const recentMessages = messages.slice(-3).map(msg => msg.content).join(' ');
     let positiveCount = 0;
     let negativeCount = 0;
-    
+
     for (const [chinese, standard] of Object.entries(ChineseToStandardEmotion)) {
       if (recentMessages.includes(chinese)) {
         const category = getEmotionCategory(standard);
@@ -266,10 +267,10 @@ export class EmotionAnalysisService {
         if (category === 'negative') negativeCount++;
       }
     }
-    
-    const trend = positiveCount > negativeCount ? 'improving' : 
-                  negativeCount > positiveCount ? 'declining' : 'stable';
-    
+
+    const trend = positiveCount > negativeCount ? 'improving' :
+      negativeCount > positiveCount ? 'declining' : 'stable';
+
     return {
       trend,
       averageIntensity: 0.5,
