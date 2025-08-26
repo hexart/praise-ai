@@ -6,10 +6,12 @@ import { SettingsModal } from './components/settings/SettingsModal';
 import { Loading } from './components/ui/Loading';
 import { Toaster } from './components/ui/Toaster';
 import { useApp } from './hooks/useApp';
+import { initializeTheme } from './hooks/useTheme';
 import { toast } from 'sonner';
 import type { ChatMode } from './types/chat';
 import type { ProviderType, ProviderConfig } from './types/provider';
 
+initializeTheme();
 /**
 应用主组件
 */
