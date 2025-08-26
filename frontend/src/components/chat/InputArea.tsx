@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff, Smile } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Send, Mic, MicOff, Smile, Paperclip } from 'lucide-react';
 import type { ChatMode } from '../../types/chat';
-import { formatChatMode } from '../../utils/formatters';
+import { MODE_CONFIGS } from '../../constants/modes';
 
 interface InputAreaProps {
   value: string;
@@ -15,8 +14,8 @@ interface InputAreaProps {
 }
 
 /**
-输入区域组件
-*/
+ * 输入区域组件
+ */
 export const InputArea: React.FC<InputAreaProps> = ({
   value,
   onChange,
@@ -24,7 +23,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   onKeyDown,
   disabled = false,
   currentMode,
-  maxLength = 100
+  maxLength = 2000
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -36,10 +35,11 @@ export const InputArea: React.FC<InputAreaProps> = ({
     if (textarea) {
       textarea.style.height = 'auto';
       const scrollHeight = textarea.scrollHeight;
-      const maxHeight = 120; // 最大高度
+      const maxHeight = 200; // 增加最大高度
       textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
     }
   }, [value]);
+
   // 处理键盘事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -50,173 +50,277 @@ export const InputArea: React.FC<InputAreaProps> = ({
     }
     onKeyDown?.(e);
   };
+
   // 处理发送
   const handleSend = () => {
     if (value.trim() && !disabled) {
       onSend();
     }
   };
+
   // 语音录制相关（占位实现）
   const handleVoiceToggle = () => {
     setIsRecording(!isRecording);
     // TODO: 实现语音录制功能
   };
+
   // 表情选择（占位实现）
   const handleEmojiClick = () => {
     // TODO: 实现表情选择功能
   };
+
+  // 附件上传（占位实现）
+  const handleAttachment = () => {
+    // TODO: 实现文件上传功能
+  };
+
   // 获取模式相关的UI配置
   const getModeConfig = (mode: ChatMode) => {
-    switch (mode) {
-      case 'praise':
-        return {
-          borderColor: 'border-yellow-300 focus:border-yellow-500 dark:border-yellow-500 dark:focus:border-yellow-400',
-        };
-      case 'comfort':
-        return {
-          borderColor: 'border-pink-300 focus:border-pink-500 dark:border-pink-500 dark:focus:border-pink-400',
-        };
-      default:
-        return {
-          borderColor: 'border-purple-300 focus:border-purple-500 dark:border-purple-500 dark:focus:border-purple-400',
-        };
+    const config = MODE_CONFIGS[mode];
+    if (!config) {
+      // 默认配置（以防万一）
+      return {
+        gradient: 'from-blue-500/10 to-indigo-500/10',
+        borderGradient: 'from-blue-500 to-indigo-500',
+        placeholder: '有什么可以帮助你的吗？',
+        accentColor: 'blue'
+      };
     }
+
+    // 根据 MODE_CONFIGS 中的 gradient 属性解析颜色
+    const gradientMap = {
+      'from-purple-400 to-indigo-400': {
+        gradient: 'from-purple-500/10 to-indigo-500/10',
+        borderGradient: 'from-purple-500 to-indigo-500',
+        accentColor: 'purple'
+      },
+      'from-yellow-400 to-orange-400': {
+        gradient: 'from-amber-500/10 to-orange-500/10',
+        borderGradient: 'from-amber-500 to-orange-500',
+        accentColor: 'amber'
+      },
+      'from-pink-400 to-purple-400': {
+        gradient: 'from-pink-500/10 to-purple-500/10',
+        borderGradient: 'from-pink-500 to-purple-500',
+        accentColor: 'pink'
+      }
+    };
+
+    const gradientConfig = gradientMap[config.gradient] || gradientMap['from-purple-400 to-indigo-400'];
+
+    return {
+      ...gradientConfig,
+      placeholder: config.subtitle
+    };
   };
+
   const modeConfig = getModeConfig(currentMode);
   const isOverLimit = value.length > maxLength;
   const canSend = value.trim() && !disabled && !isOverLimit;
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-white/50 dark:bg-gray-900/50">
-      <div className="max-w-[960px] mx-auto">
-        {/* 输入框容器 */}
-        <div
-          className={`
-            relative bg-white dark:bg-gray-800 border rounded-2xl shadow-sm transition-all duration-200
-            ${isFocused ? `${modeConfig.borderColor}` : 'border-gray-300 dark:border-gray-600'}
-            ${isOverLimit ? 'border-red-300 dark:border-red-500' : ''}
-          `}
-        >
-          {/* 主输入区域 */}
-          <div className="flex items-end">
 
-            {/* 文本输入框 */}
-            <div className="flex-1 relative">
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder={formatChatMode(currentMode).subtitle}
-                disabled={disabled}
-                rows={1}
-                className={`
-              w-full px-4 py-3 bg-transparent resize-none
-              focus:outline-none text-gray-900 placeholder-gray-500
-              min-h-[48px] max-h-[120px] leading-6
-              ${disabled ? 'cursor-not-allowed opacity-50' : ''}
-              dark:text-gray-100 dark:placeholder-gray-400
-            `}
-                style={{ scrollbarWidth: 'thin' }}
-              />
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40">
+      {/* 背景渐变效果 */}
+      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 pointer-events-none" />
+
+      <div className="relative max-w-4xl mx-auto px-4 pb-6 pt-2">
+        {/* 主输入容器 */}
+        <div className={`
+          relative group transition-all duration-300
+          ${isFocused ? 'scale-[1.005]' : ''}
+        `}>
+          {/* 渐变边框效果 */}
+          {isFocused && (
+            <div className={`
+              absolute -inset-[2px] bg-gradient-to-r ${modeConfig.borderGradient}
+              rounded-2xl opacity-30 blur-sm animate-pulse
+            `} />
+          )}
+
+          {/* 输入框主体 */}
+          <div className={`
+            relative bg-white dark:bg-gray-800 rounded-2xl
+            shadow-lg shadow-black/5 dark:shadow-black/20
+            border border-gray-200 dark:border-gray-700
+            ${isFocused ? 'border-opacity-0' : ''}
+            transition-all duration-300
+          `}>
+            {/* 顶部工具栏 */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-700/50">
+              <div className="flex items-center space-x-1">
+                {/* 模式指示器 - 使用 MODE_CONFIGS 中的图标 */}
+                <div className={`
+                  flex items-center space-x-2 px-3 py-1 rounded-full
+                  bg-gradient-to-r ${modeConfig.gradient}
+                  text-${modeConfig.accentColor}-600 dark:text-${modeConfig.accentColor}-400
+                  text-sm font-medium
+                `}>
+                  {(() => {
+                    const IconComponent = MODE_CONFIGS[currentMode].icon;
+                    return <IconComponent className="w-3.5 h-3.5" />;
+                  })()}
+                  <span>{MODE_CONFIGS[currentMode]?.name || '智能模式'}</span>
+                </div>
+              </div>
 
               {/* 字符计数 */}
-              {value.length > maxLength * 0.8 && (
-                <div className={`absolute bottom-2 right-4 text-xs ${isOverLimit ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
-                  }`}>
-                  {value.length}/{maxLength}
-                </div>
+              {value.length > 0 && (
+                <span className={`
+                  text-xs transition-all duration-300
+                  ${isOverLimit
+                    ? 'text-red-500 font-medium'
+                    : value.length > maxLength * 0.8
+                      ? 'text-amber-500'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }
+                `}>
+                  {value.length} / {maxLength}
+                </span>
               )}
             </div>
 
-            {/* 工具栏 */}
-            <div className="flex items-center space-x-2 p-2">
+            {/* 输入区域容器 */}
+            <div className="flex items-end">
+              {/* 左侧工具按钮 */}
+              <div className="flex items-center space-x-1 px-2 pb-3">
+                <button
+                  onClick={handleAttachment}
+                  disabled={disabled}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 
+                    rounded-lg transition-all duration-200
+                    dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
+                    disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="添加附件"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
 
-              {/* 表情按钮 */}
-              <button
-                onClick={handleEmojiClick}
-                disabled={disabled}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700"
-                title="添加表情"
-              >
-                <Smile className="w-4 h-4" />
-              </button>
+                <button
+                  onClick={handleEmojiClick}
+                  disabled={disabled}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 
+                    rounded-lg transition-all duration-200
+                    dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
+                    disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="添加表情"
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
+              </div>
 
-              {/* 语音按钮 */}
-              <button
-                onClick={handleVoiceToggle}
-                disabled={disabled}
-                className={`p-2 rounded-lg transition-colors ${isRecording
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-800/50'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
-                  }`}
-                title={isRecording ? '停止录音' : '语音输入'}
-              >
-                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
+              {/* 文本输入框 */}
+              <div className="flex-1 px-2">
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  placeholder={modeConfig.placeholder}
+                  disabled={disabled}
+                  rows={1}
+                  className={`
+                    w-full px-2 py-3 bg-transparent resize-none
+                    focus:outline-none text-gray-900 placeholder-gray-400
+                    min-h-[48px] max-h-[200px] leading-6
+                    text-base scrollbar-thin scrollbar-thumb-gray-300 
+                    dark:scrollbar-thumb-gray-600
+                    ${disabled ? 'cursor-not-allowed opacity-50' : ''}
+                    dark:text-gray-100 dark:placeholder-gray-500
+                  `}
+                />
+              </div>
 
-              {/* 发送按钮 */}
-              <Button
-                onClick={handleSend}
-                disabled={!canSend}
-                variant="primary"
-                size="sm"
-                className={`
-              min-w-[60px] ${canSend ? 'scale-100' : 'scale-95 opacity-50'}
-              transition-transform duration-200
-            `}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+              {/* 右侧工具按钮 */}
+              <div className="flex items-center space-x-2 px-3 pb-3">
+                {/* 语音按钮 */}
+                <button
+                  onClick={handleVoiceToggle}
+                  disabled={disabled}
+                  className={`
+                    p-2.5 rounded-xl transition-all duration-200
+                    ${isRecording
+                      ? 'text-white bg-red-500 hover:bg-red-600 animate-pulse'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                    }
+                    disabled:opacity-40 disabled:cursor-not-allowed
+                  `}
+                  title={isRecording ? '停止录音' : '语音输入'}
+                >
+                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+
+                {/* 发送按钮 */}
+                <button
+                  onClick={handleSend}
+                  disabled={!canSend}
+                  className={`
+                    relative p-2.5 rounded-xl transition-all duration-200
+                    ${canSend
+                      ? `bg-gradient-to-r ${modeConfig.borderGradient} text-white hover:shadow-lg hover:scale-105`
+                      : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                    }
+                    disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none
+                  `}
+                  title="发送消息 (Enter)"
+                >
+                  <Send className={`w-4 h-4 ${canSend ? 'animate-none' : ''}`} />
+                  {canSend && (
+                    <div className={`
+                      absolute inset-0 rounded-xl bg-gradient-to-r ${modeConfig.borderGradient}
+                      opacity-20 blur animate-pulse
+                    `} />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* 底部提示信息 */}
-        <div className="mt-3 px-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center space-x-4">
-
-            {/* 当前模式提示 */}
-            <span className="flex items-center space-x-1">
-              <span>{formatChatMode(currentMode).icon}</span>
-              <span>{formatChatMode(currentMode).name}</span>
-            </span>
-
+        <div className="mt-3 flex items-center justify-between px-4">
+          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             {/* 快捷键提示 */}
-            <span>Enter 发送，Shift+Enter 换行</span>
+            <span className="flex items-center space-x-2">
+              <kbd className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Enter</kbd>
+              <span>发送</span>
+            </span>
+            <span className="flex items-center space-x-2">
+              <kbd className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Shift + Enter</kbd>
+              <span>换行</span>
+            </span>
           </div>
 
           {/* 状态指示 */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3 text-xs">
             {isRecording && (
-              <span className="flex items-center space-x-1 text-red-500">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="flex items-center space-x-2 text-red-500">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
                 <span>正在录音</span>
               </span>
             )}
 
             {disabled && (
-              <span className="text-amber-500 dark:text-amber-400">AI正在回复中...</span>
+              <span className="flex items-center space-x-2 text-blue-500 dark:text-blue-400">
+                <span className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></span>
+                <span>AI 正在思考...</span>
+              </span>
             )}
           </div>
         </div>
 
-        {/* 字符超限警告 */}
+        {/* 超限警告 */}
         {isOverLimit && (
-          <div className="mt-2 text-center">
-            <span className="text-xs text-red-500 bg-red-50 px-3 py-1 rounded-full dark:bg-red-900/30">
-              输入内容过长，请控制在 {maxLength} 字符以内
-            </span>
+          <div className="mt-2 mx-4 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-xs text-red-600 dark:text-red-400 text-center">
+              输入内容超出限制，请精简至 {maxLength} 字符以内
+            </p>
           </div>
         )}
-
-        {/* 使用提示 */}
-        <div className="mt-3 mb-2 text-center">
-          <p className="text-xs text-gray-400 leading-relaxed dark:text-gray-500">
-            本AI助手旨在提供情感支持，不构成专业心理或医疗建议
-          </p>
-        </div>
       </div>
     </div>
   );
