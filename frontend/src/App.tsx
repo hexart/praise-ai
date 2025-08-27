@@ -1,9 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AppHeader } from './components/layout/AppHeader';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { InputArea } from './components/chat/InputArea';
 import { SettingsModal } from './components/settings/SettingsModal';
-import { Loading } from './components/ui/Loading';
 import { Toaster } from './components/ui/Toaster';
 import { useApp } from './hooks/useApp';
 import { initializeTheme } from './hooks/useTheme';
@@ -19,7 +18,6 @@ initializeTheme();
 export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [selectedMode, setSelectedMode] = useState<ChatMode>('smart');
 
   // 使用主Hook
   const {
@@ -29,12 +27,18 @@ export const App: React.FC = () => {
     settings,
     updateSettings,
     userId,
-    isReady,
     error,
     resetAll,
     exportData,
     importData
   } = useApp();
+
+  const [selectedMode, setSelectedMode] = useState<ChatMode>(settings.defaultMode);
+
+  // 当设置中的默认模式变化时，更新selectedMode
+  useEffect(() => {
+    setSelectedMode(settings.defaultMode);
+  }, [settings.defaultMode]);
 
   // 处理消息发送
   const handleSendMessage = useCallback(async () => {
@@ -162,40 +166,6 @@ export const App: React.FC = () => {
     }
   }, [error]);
 
-  // 如果应用未准备就绪且没有Provider，显示友好的引导界面而不是错误界面
-  if (!isReady) {
-    // 如果是因为没有Provider导致的未就绪，显示欢迎界面
-    if (!provider.provider && !provider.isLoading) {
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              欢迎使用 AI 智能陪伴助手
-            </h3>
-            <p className="text-gray-600 mb-4">
-              请点击下方按钮配置 AI 服务提供商，选择合适的模型开始对话。
-            </p>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              开始配置
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    // 其他情况显示加载界面
-    return (
-      <Loading size="lg" text='正在初始化AI助手...' />
-    );
-  }
   return (
     <div className="min-h-screen flex flex-col pt-24 md:pt-21">
       {/* 头部 */}
@@ -250,14 +220,7 @@ export const App: React.FC = () => {
         onExportData={exportData}
         onImportData={handleImportData}
         onResetAll={handleResetAll}
-        isLoading={provider.isLoading}
         isModelLoading={provider.isModelLoading}
-      />
-
-      {/* 叠加式加载组件 - 当Provider正在初始化时显示 */}
-      <Loading
-        show={provider.isLoading && isSettingsOpen}
-        text="正在切换AI服务提供商..."
       />
 
       {/* 固定输入区域 */}
