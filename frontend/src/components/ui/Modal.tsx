@@ -11,7 +11,8 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  size = 'md'
+  size = 'md',
+  className
 }) => {
   // ESC键关闭模态框
   useEffect(() => {
@@ -34,7 +35,7 @@ export const Modal: React.FC<ModalProps> = ({
     lg: 'max-w-2xl',
     xl: 'max-w-4xl'
   }; return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className={`fixed inset-0 z-50 overflow-y-auto ${className}`}>
       {/* 背景遮罩 */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-md"

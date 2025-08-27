@@ -77,7 +77,7 @@ export const App: React.FC = () => {
   // 处理模式切换
   const handleModeChange = useCallback((mode: ChatMode) => {
     setSelectedMode(mode);
-    
+
     toast.info(`已切换到${MODE_CONFIGS[mode].name}`, {
       description: `${MODE_CONFIGS[mode].description}`
     });
@@ -170,17 +170,22 @@ export const App: React.FC = () => {
     <div className="min-h-screen flex flex-col pt-24 md:pt-21">
       {/* 头部 */}
       <AppHeader
+        selectedMode={selectedMode}
+        onModeChange={handleModeChange}
         onSettingsClick={() => setIsSettingsOpen(true)}
         onClearHistory={handleClearHistory}
+        // onStatsClick={handleStatsClick} // 如果有统计功能的话
         isConnected={provider.isConnected}
-        providerName={provider.isConnected && provider.connectedProvider && provider.connectedModel
-          ? `${provider.supportedProviders.find(p => p.type === provider.connectedProvider)?.name || provider.connectedProvider} (${provider.connectedModel})`
-          : provider.provider
-            ? (provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType)
-            : '未配置'
+        providerName={
+          provider.isConnected && provider.connectedProvider && provider.connectedModel
+            ? `${provider.supportedProviders.find(p => p.type === provider.connectedProvider)?.name || provider.connectedProvider} (${provider.connectedModel})`
+            : provider.provider
+              ? (provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType)
+              : '未配置'
         }
         messageCount={chat.chatHistory.length}
         isLoading={chat.isLoading}
+        disabled={chat.isLoading || !provider.provider}
       />
 
       {/* 主内容区 */}
@@ -188,7 +193,6 @@ export const App: React.FC = () => {
         <ChatInterface
           messages={chat.chatHistory}
           selectedMode={selectedMode}
-          onModeChange={handleModeChange}
           isLoading={chat.isLoading}
           streamingMessageId={chat.streamingMessageId}
           debugMode={settings.debugMode}

@@ -140,7 +140,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
           {/* 输入框主体 */}
           <div className={`
             relative bg-white dark:bg-gray-800 rounded-2xl
-            shadow-lg shadow-black/5 dark:shadow-black/20
+            shadow-lg dark:shadow-black/20
             border border-gray-200 dark:border-gray-700
             ${isFocused ? 'border-opacity-0' : ''}
             transition-all duration-300
