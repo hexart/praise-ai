@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useProvider } from './useProvider';
 import { useChat } from './useChat';
 import { useEmotionAnalysis } from './useEmotionAnalysis';
@@ -25,7 +25,6 @@ interface UseAppReturn {
   // 用户ID
   userId: string;
   // 应用状态
-  isReady: boolean;
   error: string | null;
   // 工具方法
   resetAll: () => boolean;
@@ -97,12 +96,6 @@ export function useApp(): UseAppReturn {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider.provider, provider.currentModel]);
-
-  // 应用是否准备就绪
-  const isReady = useMemo(() => {
-    // 应用就绪条件：有可用的Provider（模型列表可以后续加载）
-    return Boolean(provider.provider) && !provider.isLoading;
-  }, [provider.provider, provider.isLoading]);
 
   // 更新设置
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
@@ -258,7 +251,6 @@ export function useApp(): UseAppReturn {
     userId,
 
     // 应用状态
-    isReady,
     error: error || provider.error || chat.error,
 
     // 工具方法
