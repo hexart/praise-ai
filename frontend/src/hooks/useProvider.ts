@@ -10,14 +10,13 @@ import { getFromStorage, saveToStorage } from '../utils/storage';
 interface ProviderState {
   provider: BaseProvider | null;
   type: ProviderType;
-  isLoading: boolean; // Provider 初始化加载状态
-  isModelLoading: boolean; // 新增：模型列表加载状态
+  isModelLoading: boolean; // 模型列表加载状态
   error: string | null;
   models: ModelInfo[];
   currentModel: string | null;
-  isConnected: boolean; // 新增：连接状态
-  connectedProvider: ProviderType | null; // 新增：当前连接的Provider
-  connectedModel: string | null; // 新增：当前连接的模型
+  isConnected: boolean; // 连接状态
+  connectedProvider: ProviderType | null; // 当前连接的Provider
+  connectedModel: string | null; // 当前连接的模型
 }
 
 // 存储键 - 简单明了
@@ -152,7 +151,7 @@ export function useProvider() {
     }
   }, [state.type, setError]);
 
-  // 切换 Provider - 简单明了，不强制测试连接
+  // 切换 Provider
   const switchProvider = useCallback(async (type: ProviderType, config?: ProviderConfig) => {
     try {
       // 获取最终配置
@@ -255,7 +254,7 @@ export function useProvider() {
     }
   }, [state.provider, setError]);
 
-  // 新增：设置连接状态
+  // 设置连接状态
   const setConnectionStatus = useCallback((connected: boolean, providerType?: ProviderType, modelName?: string) => {
     setState(prev => ({
       ...prev,
@@ -286,7 +285,6 @@ export function useProvider() {
     provider: state.provider,
     providerType: state.type,
     config: configState, // 使用状态而不是ref，确保组件能正确重新渲染
-    isLoading: state.isLoading, // Provider 初始化加载状态
     isModelLoading: state.isModelLoading, // 模型列表加载状态
     error: state.error,
     models: state.models,
