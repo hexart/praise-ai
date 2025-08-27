@@ -97,7 +97,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
       'from-yellow-400 to-orange-400': {
         gradient: 'from-amber-500/10 to-orange-500/10',
         borderGradient: 'from-amber-500 to-orange-500',
-        accentColor: 'amber'
+        accentColor: 'yellow'
       },
       'from-pink-400 to-purple-400': {
         gradient: 'from-pink-500/10 to-purple-500/10',
