@@ -297,7 +297,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   {onStatsClick && messageCount > 0 && (
                     <button
                       onClick={onStatsClick}
-                      className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200"
+                      className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white/50 hover:bg-white/70 hover:text-gray-900 dark:text-gray-400 dark:bg-gray-800/50 dark:hover:text-gray-200 dark:hover:bg-gray-800/70 rounded-lg transition-all duration-200"
                     >
                       <BarChart3 className="w-4 h-4 inline mr-1.5" />
                       <span className="hidden lg:inline">统计</span>
@@ -308,11 +308,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   {messageCount > 0 && (
                     <button
                       onClick={onClearHistory}
-                      className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium bg-white/50 dark:bg-gray-800/50 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white/70 dark:hover:bg-gray-800/70 rounded-lg transition-all duration-200"
+                      className="flex items-center gap-2 h-8 px-3 py-1.5 text-sm font-medium bg-white/50 text-gray-600 hover:text-gray-900 dark:bg-gray-800/50 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white/70 dark:hover:bg-gray-800/70 rounded-lg transition-all duration-200"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="hidden lg:inline">清空</span>
-                      <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full font-medium">
+                      <span className="inline-flex items-center justify-center h-5 px-1.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full font-medium">
                         {messageCount}
                       </span>
                     </button>
@@ -321,9 +321,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                   {/* 设置按钮 */}
                   <button
                     onClick={onSettingsClick}
-                    className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200"
+                    className="flex items-center gap-2 h-8 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 dark:bg-gray-800/50 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-lg transition-all duration-200"
                   >
-                    <Settings className="w-4 h-4 inline mr-1.5" />
+                    <Settings className="w-4 h-4" />
                     <span className="hidden lg:inline">设置</span>
                   </button>
                 </div>

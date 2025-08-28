@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle, ChevronLeft } from 'lucide-react';
+import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -112,29 +112,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   }, [isOpen]);
 
   const tabs = [
-    { 
-      id: 'provider' as TabType, 
-      name: 'API配置', 
-      icon: Server, 
-      color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/30' 
+    {
+      id: 'provider' as TabType,
+      name: 'API配置',
+      icon: Server,
+      color: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950/30'
     },
-    { 
-      id: 'app' as TabType, 
-      name: '应用设置', 
-      icon: Settings, 
-      color: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950/30' 
+    {
+      id: 'app' as TabType,
+      name: '应用设置',
+      icon: Settings,
+      color: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950/30'
     },
-    { 
-      id: 'data' as TabType, 
-      name: '数据管理', 
-      icon: Download, 
-      color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30' 
+    {
+      id: 'data' as TabType,
+      name: '数据管理',
+      icon: Download,
+      color: 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30'
     },
-    { 
-      id: 'about' as TabType, 
-      name: '关于', 
-      icon: User, 
-      color: 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-950/30' 
+    {
+      id: 'about' as TabType,
+      name: '关于',
+      icon: User,
+      color: 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-950/30'
     }
   ];
 
@@ -193,6 +193,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // 获取当前标签配置
   const currentTab = tabs.find(t => t.id === activeTab);
 
+  // 默认模式下拉菜单状态
+  const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
+
+  // 点击外部关闭下拉菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown]')) {
+        setModeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // 渲染标签内容（共用函数）
   const renderTabContent = () => {
     switch (activeTab) {
@@ -228,10 +246,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">应用设置</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">自定义应用行为和偏好</p>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-4">
               {/* 主题设置 */}
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium text-gray-900 dark:text-gray-100">主题模式</h4>
@@ -244,18 +262,94 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* 默认模式 */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">默认聊天模式</span>
-                  <select
-                    value={settings.defaultMode}
-                    onChange={(e) => onSettingsUpdate({ defaultMode: e.target.value as ChatMode })}
-                    className="mt-2 w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                  >
-                    {Object.values(MODE_CONFIGS).map(mode => (
-                      <option key={mode.id} value={mode.id}>{mode.name}</option>
-                    ))}
-                  </select>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 block">
+                    默认聊天模式
+                  </span>
+                  <div className="relative" data-dropdown>
+                    <button
+                      type="button"
+                      onClick={() => setModeDropdownOpen(!modeDropdownOpen)}
+                      className="
+                        w-full flex items-center justify-between px-4 py-3
+                        bg-gray-50 dark:bg-gray-900/50
+                        border border-gray-200 dark:border-gray-700
+                        rounded-xl
+                        hover:border-blue-300 dark:hover:border-blue-600
+                        focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50
+                        transition-all duration-200
+                        text-left
+                      "
+                    >
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {MODE_CONFIGS[settings.defaultMode as keyof typeof MODE_CONFIGS]?.name || '选择模式'}
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${modeDropdownOpen ? 'rotate-180' : ''
+                          }`}
+                      />
+                    </button>
+
+                    {/* 自定义下拉菜单 - 与模型列表相同样式 */}
+                    {modeDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl overflow-hidden">
+                        <div className="py-2">
+                          {Object.values(MODE_CONFIGS).map((mode) => {
+                            const ModeIcon = mode.icon;
+                            return (
+                              <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => {
+                                  onSettingsUpdate({ defaultMode: mode.id });
+                                  setModeDropdownOpen(false);
+                                }}
+                                className={`
+                    w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200
+                    ${settings.defaultMode === mode.id
+                                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
+                                    : ''
+                                  }
+                  `}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <div className={`
+                        p-2 rounded-lg
+                        ${settings.defaultMode === mode.id
+                                        ? 'bg-gradient-to-r ' + mode.gradient + ' text-white shadow-lg shadow-' + mode.gradient.split('-')[1] + '-500/20'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                      }
+                      `}>
+                                      <ModeIcon className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                                        {mode.name}
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        {mode.description}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {settings.defaultMode === mode.id && (
+                                    <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                      <Check className="w-3 h-3 text-white" />
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    选择启动时的默认对话模式
+                  </p>
                 </label>
               </div>
 
@@ -452,32 +546,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">数据管理</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">导入、导出和管理应用数据</p>
         </div>
 
         {/* 导出数据 */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-xl p-5 border border-green-200 dark:border-green-800">
-          <div className="flex items-start space-x-3">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
               <Download className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div className="flex-1">
-              <h4 className="font-medium text-gray-900 mb-1 dark:text-gray-100">导出数据</h4>
-              <p className="text-sm text-gray-600 mb-3 dark:text-gray-400">
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">导出数据</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 导出所有数据到 JSON 文件
               </p>
-              <Button onClick={handleExportData} variant="primary" size="sm">
-                导出数据
-              </Button>
             </div>
+            <Button onClick={handleExportData} variant="primary" size="sm">
+              导出数据
+            </Button>
           </div>
         </div>
 
-        {/* 导入数据 */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+        {/* 导入数据 (布局保持不变以优化用户体验) */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start space-x-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
               <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -489,7 +583,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   从备份文件恢复数据
                 </p>
               </div>
-              
+
               <div>
                 <input
                   type="file"
@@ -504,7 +598,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={importText}
                   onChange={(e) => setImportText(e.target.value)}
                   placeholder="或直接粘贴 JSON 数据..."
-                  className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 resize-none"
+                  className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white text-gray-900 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100 resize-none"
                 />
               </div>
 
@@ -521,25 +615,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* 重置数据 */}
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 rounded-xl p-5 border border-red-200 dark:border-red-800">
-          <div className="flex items-start space-x-3">
+        <div className="bg-red-50 dark:bg-red-800/30 rounded-xl p-5 border border-red-200 dark:border-red-800">
+          <div className="flex items-center space-x-3">
             <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg">
               <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div className="flex-1">
-              <h4 className="font-medium text-red-900 mb-1 dark:text-red-100">危险区域</h4>
-              <p className="text-sm text-red-700 mb-3 dark:text-red-300">
+              <h4 className="font-medium text-red-900 dark:text-red-100">危险区域</h4>
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                 重置将删除所有数据且无法恢复
               </p>
-              <Button
-                onClick={() => setShowResetConfirm(true)}
-                variant="danger"
-                size="sm"
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                重置所有数据
-              </Button>
             </div>
+            <Button
+              onClick={() => setShowResetConfirm(true)}
+              variant="danger"
+              size="sm"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              重置所有数据
+            </Button>
           </div>
         </div>
       </div>
@@ -550,51 +644,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <>
       {/* 移动端全屏模态框 */}
       <div className={`
-        fixed inset-0 z-50 bg-white dark:bg-gray-900
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-        lg:hidden
-      `}>
+      fixed inset-0 z-50 bg-gray-50 dark:bg-gray-950
+      transform transition-transform duration-300 ease-in-out
+      ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+      md:hidden
+    `}>
         {/* 移动端头部 */}
-        <div className="sticky top-0 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
-          <div className="flex items-center justify-between px-4 h-14">
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
+          <div className="flex items-center justify-between px-4 h-16">
             <div className="flex items-center space-x-3">
               <button
                 onClick={onClose}
-                className="p-2 -ml-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-all"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
                 设置
               </h2>
             </div>
-            
+
             {/* 当前标签指示器 */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`
-                flex items-center space-x-2 px-3 py-1.5 rounded-lg
-                ${currentTab?.color}
-                transition-colors duration-200
-              `}
+              flex items-center space-x-2 px-4 py-2 rounded-full
+              bg-gradient-to-r ${currentTab?.color || 'from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700'}
+              shadow-sm transition-all duration-200 hover:shadow-md
+            `}
             >
               {currentTab && <currentTab.icon className="w-4 h-4" />}
-              <span className="text-sm font-medium">{currentTab?.name}</span>
-              <svg 
+              <span className="text-sm font-semibold">{currentTab?.name}</span>
+              <svg
                 className={`w-3 h-3 transition-transform duration-200 ${isMobileMenuOpen ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
           </div>
-          
+
           {/* 移动端标签下拉菜单 */}
           {isMobileMenuOpen && (
-            <div className="absolute top-14 right-4 left-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-20">
+            <div className="absolute top-16 right-4 left-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 py-3 z-20">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -603,22 +697,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={tab.id}
                     onClick={() => handleMobileTabChange(tab.id)}
                     className={`
-                      w-full flex items-center space-x-3 px-4 py-3
-                      transition-colors duration-200
-                      ${isActive 
-                        ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white' 
+                    w-full flex items-center space-x-3 px-5 py-3.5
+                    transition-all duration-200
+                    ${isActive
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 text-blue-700 dark:text-blue-300'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       }
-                    `}
+                  `}
                   >
-                    <div className={`p-2 rounded-lg ${tab.color}`}>
+                    <div className={`
+                    p-2.5 rounded-xl transition-colors
+                    ${isActive ? 'bg-gradient-to-r ' + tab.color : 'bg-gray-100 dark:bg-gray-700'}
+                  `}>
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className="font-medium">{tab.name}</span>
+                    <span className="font-semibold flex-1 text-left">{tab.name}</span>
                     {isActive && (
-                      <svg className="w-4 h-4 ml-auto text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full" />
                     )}
                   </button>
                 );
@@ -626,56 +721,80 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* 移动端内容区 */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 pb-20">
+        <div className="flex-1 overflow-y-auto px-4 py-6 pb-20 bg-gray-100/50 dark:bg-gray-800/50">
           {renderTabContent()}
         </div>
       </div>
 
       {/* 桌面端模态框 */}
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title="设置" 
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="设置面板"
         size="xl"
-        className="hidden lg:block"
+        className="hidden md:block rounded-2xl"
       >
-        <div className="flex h-[600px]">
-          {/* 侧边栏 */}
-          <div className="w-56 border-r border-gray-200 dark:border-gray-700 pr-6">
+        <div className="flex h-[500px]">
+          {/* 侧边栏 - 现代化设计 */}
+          <div className="w-64 bg-gray-50 dark:bg-gray-900 pe-6 border-r border-gray-200 dark:border-gray-800">
             <nav className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
+                // 为每个标签定义简洁的配色
+                type TabType = 'provider' | 'app' | 'data' | 'about';
+                const getTabColors = (tabId: TabType) => {
+                  switch (tabId) {
+                    case 'provider': return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30';
+                    case 'app': return 'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/30';
+                    case 'data': return 'text-purple-600 bg-purple-100 dark:text-purple-400 dark:bg-purple-900/30';
+                    case 'about': return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700';
+                    default: return 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800';
+                  }
+                };
+
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      w-full flex items-center space-x-3 px-4 py-3 rounded-xl
-                      transition-all duration-200 text-left group
+                      w-full py-3 rounded-xl overflow-hidden
+                      transition-all duration-200 text-left group relative
                       ${isActive
-                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 dark:from-blue-950/30 dark:to-indigo-950/30 dark:text-blue-300 dark:border-blue-800 shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800'
+                        ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm border border-gray-200 dark:border-gray-700'
+                        : 'text-gray-600 hover:bg-gray-100/50 dark:text-gray-400 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200'
                       }
                     `}
                   >
-                    <div className={`
-                      p-2 rounded-lg transition-colors duration-200
-                      ${isActive ? tab.color : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700'}
-                    `}>
-                      <Icon className="w-4 h-4" />
+                    {isActive && (
+                      <div className="absolute inset-y-0 left-0 w-1 bg-blue-500 dark:bg-blue-400" />
+                    )}
+
+                    <div className="flex items-center space-x-3 px-4">
+                      <div className={`
+                        p-2 rounded-lg transition-all duration-200
+                        ${isActive
+                          ? getTabColors(tab.id)
+                          : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700'
+                        }
+                      `}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">{tab.name}</span>
+                      {isActive && (
+                        <ChevronRight className="w-4 h-4 ml-auto text-gray-400" />
+                      )}
                     </div>
-                    <span className="font-medium">{tab.name}</span>
                   </button>
                 );
               })}
             </nav>
           </div>
 
-          {/* 主内容区 */}
-          <div className="flex-1 pl-8 pr-2 overflow-y-auto">
+          {/* 主内容区 - 添加滚动条美化 */}
+          <div className="flex-1 bg-white dark:bg-gray-900 ps-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
             {renderTabContent()}
           </div>
         </div>
