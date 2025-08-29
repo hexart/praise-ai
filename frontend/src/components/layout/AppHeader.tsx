@@ -101,7 +101,7 @@ const ConnectionStatus: React.FC<{
           w-1.5 h-1.5 rounded-full transition-colors
           ${isConnected ? 'bg-emerald-500' : 'bg-gray-400'}
         `} />
-        <span className="text-gray-600 dark:text-gray-400">
+        <span className="truncate text-gray-600 dark:text-gray-400">
           {providerName}
         </span>
       </div>
@@ -153,8 +153,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   }, [isModeMenuOpen]);
   
   return (
-    <header className="fixed top-0 md:top-4 left-0 right-0 z-50 px-4 md:px-6">
-      <div className="max-w-7xl mx-auto">
+    <header className="fixed top-2 md:top-4 left-0 right-0 z-50 px-4 md:px-6">
+      <div className="max-w-5xl mx-auto">
         <div className={`
           backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 
           border border-gray-200/50 dark:border-gray-700/50
@@ -173,7 +173,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                     <h1 className="text-base font-semibold text-gray-900 dark:text-white leading-none">
                       舔狗&夸夸
                     </h1>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-xs truncate text-gray-500 dark:text-gray-400 mt-0.5">
                       AI情感支持助手
                     </p>
                   </div>
@@ -233,7 +233,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                       return (
                         <>
                           <IconComponent className="w-4 h-4" />
-                          <span className="hidden sm:inline">{config.name}</span>
+                          <span className="hidden sm:inline truncate">{config.name}</span>
                           <svg 
                             className={`w-3 h-3 transition-transform duration-200 ${isModeMenuOpen ? 'rotate-180' : ''}`}
                             fill="none" 

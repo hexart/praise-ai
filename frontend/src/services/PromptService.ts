@@ -16,10 +16,10 @@ export class PromptService {
     this.quoteService = new QuoteService();
     this.diversityService = new ResponseDiversityService();
   }
+
   /**
-  
-  构建完整的系统提示词
-  */
+   *构建完整的系统提示词
+   */
   buildSystemPrompt(
     mode: ChatMode,
     emotionAnalysis?: EmotionAnalysis,
@@ -612,6 +612,7 @@ ${isIntense ? '• 强烈情感时，给予更多的耐心和包容' : ''}`;
 
     return this.quoteService.getRelevantQuote(quoteType, userId, dynamicProbability);
   }
+
   /**
   - 构建调试信息（开发模式使用）
   */

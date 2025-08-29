@@ -209,7 +209,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
               </div>
 
               {/* 文本输入框 */}
-              <div className="flex-1 px-2">
+              <div className="flex-1 pe-2">
                 <textarea
                   ref={textareaRef}
                   value={value}

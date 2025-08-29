@@ -738,7 +738,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       >
         <div className="flex h-[500px]">
           {/* 侧边栏 - 现代化设计 */}
-          <div className="w-64 bg-gray-50 dark:bg-gray-900 pe-6 border-r border-gray-200 dark:border-gray-800">
+          <div className="w-54 dark:bg-gray-900 pe-6 border-r border-gray-200 dark:border-gray-800">
             <nav className="space-y-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon;

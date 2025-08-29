@@ -23,8 +23,8 @@ const TypingIndicator: React.FC = () => (
 );
 
 /**
-情感分析显示组件
-*/
+ *情感分析显示组件
+ */
 interface EmotionDisplayProps {
   emotionAnalysis: Record<string, unknown>;
 }
@@ -57,8 +57,8 @@ const EmotionDisplay: React.FC<EmotionDisplayProps> = ({ emotionAnalysis }) => {
 };
 
 /**
-调试信息显示组件
-*/
+ *调试信息显示组件
+ */
 interface DebugInfoProps {
   debugInfo: string;
 }
@@ -91,8 +91,8 @@ const DebugInfo: React.FC<DebugInfoProps> = ({ debugInfo }) => {
 };
 
 /**
-消息气泡组件
-*/
+ *消息气泡组件
+ */
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isStreaming = false,
@@ -166,7 +166,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
 
           {/* 时间戳 */}
-          <div className={`text-xs mt-2 ${isUser ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+          <div className={`text-xs mt-2 ${isUser ? 'text-blue-100 text-right' : 'text-gray-500 dark:text-gray-400'}`}>
             {formatTimestamp(message.timestamp, 'absolute')}
             {isStreaming && (
               <span className="ml-2 inline-flex items-center">
