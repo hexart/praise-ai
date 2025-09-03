@@ -217,10 +217,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       case 'provider':
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">API 配置</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">配置 AI 服务提供商和模型</p>
-            </div>
             <ProviderSettings
               providers={providers}
               currentProvider={currentProvider}
@@ -242,11 +238,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       case 'app':
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">应用设置</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">自定义应用行为和偏好</p>
-            </div>
-
             <div className="grid grid-cols-1 gap-4">
               {/* 主题设置 */}
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
@@ -432,11 +423,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       case 'about':
         return (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">关于应用</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">应用信息和版本详情</p>
-            </div>
-
             <div className="space-y-4">
               {/* 应用信息卡片 */}
               <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
@@ -547,11 +533,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
     return (
       <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">数据管理</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">导入、导出和管理应用数据</p>
-        </div>
-
         {/* 导出数据 */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
