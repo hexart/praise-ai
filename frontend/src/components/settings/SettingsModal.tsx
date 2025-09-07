@@ -741,7 +741,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      w-full py-3 rounded-xl overflow-hidden
+                      w-full py-2 rounded-xl overflow-hidden
                       transition-all duration-200 text-left group relative
                       ${isActive
                         ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm border border-gray-200 dark:border-gray-700'
@@ -753,7 +753,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <div className="absolute inset-y-0 left-0 w-1 bg-blue-500 dark:bg-blue-400" />
                     )}
 
-                    <div className="flex items-center space-x-3 px-4">
+                    <div className="flex items-center space-x-3 px-3">
                       <div className={`
                         p-2 rounded-lg transition-all duration-200
                         ${isActive
