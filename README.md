@@ -165,7 +165,7 @@ pnpm preview
 
 ### 6. Docker 部署
 
-项目支持通过 Docker 进行部署，您可以使用以下命令构建和运行 Docker 镜像：
+项目支持通过 Docker 进行部署，Docker 部署仅包含前端应用。如果您需要使用 Ollama 本地模型，需要手动运行后端 Python 代理服务。您可以使用以下命令构建和运行 Docker 镜像：
 
 ```bash
 # 构建 Docker 镜像
