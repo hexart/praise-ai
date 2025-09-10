@@ -163,6 +163,30 @@ pnpm build
 pnpm preview
 ```
 
+### 6. Docker 部署
+
+项目支持通过 Docker 进行部署，您可以使用以下命令构建和运行 Docker 镜像：
+
+```bash
+# 构建 Docker 镜像
+pnpm docker:build
+
+# 运行 Docker 容器
+pnpm docker:run
+```
+
+或者直接使用 Docker 命令：
+
+```bash
+# 构建镜像
+docker build -t praise-ai-frontend .
+
+# 运行容器
+docker run -p 5173:5173 praise-ai-frontend
+```
+
+应用将在 `http://localhost:5173` 启动。
+
 ## ⚙️ 配置说明
 
 ### 环境变量
@@ -292,6 +316,8 @@ pnpm dev          # 仅启动前端开发服务器
 pnpm build        # 构建生产版本
 pnpm preview      # 预览构建结果
 pnpm lint         # 代码检查
+pnpm docker:build # 构建 Docker 镜像
+pnpm docker:run   # 运行 Docker 容器
 ```
 
 ### 调试模式
