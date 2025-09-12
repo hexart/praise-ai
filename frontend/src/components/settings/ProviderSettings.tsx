@@ -105,21 +105,23 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       return;
     }
 
-    // 检查配置是否有效
-    if (!currentConfig.apiUrl) {
-      setTestStatus('error');
-      setTestMessage('请填写完整的 API 配置（包括 API 地址）');
-      setTimeout(() => {
-        setTestStatus('idle');
-        setTestMessage('');
-      }, 3000);
-      return;
+    // 对于非内置 Provider，检查配置是否有效
+    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
+      if (!currentConfig.apiUrl) {
+        setTestStatus('error');
+        setTestMessage('请填写完整的 API 配置（包括 API 地址）');
+        setTimeout(() => {
+          setTestStatus('idle');
+          setTestMessage('');
+        }, 3000);
+        return;
+      }
     }
 
-    // 对于需要 API 密钥的 Provider，检查是否已填写
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
+    // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
       setTestStatus('error');
-      setTestMessage('请填写完整的 API 配置（包括 API 密钥）');
+      setTestMessage('请配置 API 密钥');
       setTimeout(() => {
         setTestStatus('idle');
         setTestMessage('');
@@ -181,11 +183,38 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     }
   };
 
+  // 检查配置是否有效 - 统一处理所有 Provider
+  const isConfigValid = () => {
+    // 对于内置 Provider，不需要检查 apiUrl
+    if (currentProvider === 'openai' || currentProvider === 'anthropic') {
+      // 检查环境变量中的 API key
+      if (!import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+        // 允许用户打开下拉菜单，但在获取模型时会提示需要填写 API 密钥
+        return true;
+      }
+      return true;
+    }
+    
+    // 对于其他 Provider，仍然需要检查 apiUrl
+    if (!currentConfig.apiUrl) return false;
+
+    return true;
+  };
+
   // 处理模型下拉菜单点击 - 统一处理所有 Provider
   const handleModelDropdownClick = async () => {
-    // 检查基本配置是否有效
-    if (!currentConfig.apiUrl) {
-      return; // 不允许打开下拉菜单
+    // 对于内置 Provider，不需要检查 apiUrl
+    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
+      // 检查基本配置是否有效
+      if (!currentConfig.apiUrl) {
+        return; // 不允许打开下拉菜单
+      }
+    }
+
+    // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+      logger.error('无法加载模型：请配置 API 密钥');
+      return;
     }
 
     // 如果下拉菜单即将打开且模型列表为空，则自动刷新
@@ -203,15 +232,18 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   const handleLoadModels = async () => {
     if (isModelLoading) return; // 使用独立的模型加载状态
 
-    // 检查配置是否有效
-    if (!currentConfig.apiUrl) {
-      logger.error('无法加载模型：请先填写 API 地址');
-      return;
+    // 对于内置 Provider，不需要检查 apiUrl
+    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
+      // 检查配置是否有效
+      if (!currentConfig.apiUrl) {
+        logger.error('无法加载模型：请先填写 API 地址');
+        return;
+      }
     }
 
-    // 对于需要 API 密钥的 Provider，检查是否已填写
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
-      logger.error('无法加载模型：请先填写 API 密钥');
+    // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+      logger.error('无法加载模型：请配置 API 密钥');
       return;
     }
 
@@ -237,19 +269,6 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
       default:
         return <Server className="w-5 h-5" />;
     }
-  };
-
-  // 检查配置是否有效 - 统一处理所有 Provider
-  const isConfigValid = () => {
-    if (!currentConfig.apiUrl) return false;
-
-    // 对于需要 API 密钥的 Provider，检查是否已填写
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'gemini') && !currentConfig.apiKey) {
-      // 允许用户打开下拉菜单，但在获取模型时会提示需要填写 API 密钥
-      return true;
-    }
-
-    return true;
   };
 
   // 格式化模型显示名称
@@ -372,34 +391,37 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
         </h3>
         <div className="space-y-5">
           {/* API地址 - 现代化输入框 */}
-          <div>
-            <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              <Server className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-              API地址
-            </label>
-            <input
-              type="text"
-              value={currentConfig.apiUrl || ''}
-              onChange={(e) => onConfigUpdate({ apiUrl: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
-              placeholder={
-                currentProvider === 'ollama'
-                  ? 'http://localhost:8000'
-                  : 'https://api.openai.com/v1'
-              }
-              disabled={isLoading}
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
-              <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
-              {currentProvider === 'ollama'
-                ? '本地Ollama服务的API地址（OpenAI兼容格式）'
-                : '兼容OpenAI格式的API端点地址，确保以"/v1"结尾'
-              }
-            </p>
-          </div>
+          {/* 对于内置Provider，隐藏API地址字段 */}
+          {(currentProvider === 'custom' || currentProvider === 'ollama') && (
+            <div>
+              <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <Server className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                API地址
+              </label>
+              <input
+                type="text"
+                value={currentConfig.apiUrl || ''}
+                onChange={(e) => onConfigUpdate({ apiUrl: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
+                placeholder={
+                  currentProvider === 'ollama'
+                    ? 'http://localhost:8000'
+                    : 'https://api.openai.com/v1'
+                }
+                disabled={isLoading}
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
+                <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+                {currentProvider === 'ollama'
+                  ? '本地Ollama服务的API地址（OpenAI兼容格式）'
+                  : '兼容OpenAI格式的API端点地址，确保以"/v1"结尾'
+                }
+              </p>
+            </div>
+          )}
 
-          {/* API密钥 (非Ollama) - 现代化密码输入 */}
-          {currentProvider !== 'ollama' && (
+          {/* API密钥 (仅对自定义Provider显示) - 现代化密码输入 */}
+          {currentProvider === 'custom' && (
             <div>
               <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 <Eye className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
@@ -426,6 +448,44 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                 <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
                 请确保API密钥安全，不要泄露给他人
               </p>
+            </div>
+          )}
+
+          {/* 对于内置Provider，显示提示信息 */}
+          {(currentProvider === 'openai' || currentProvider === 'anthropic') && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                    API密钥配置
+                  </h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    API密钥已通过环境变量配置，无需在此处输入
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 对于自定义Provider，显示配置提示 */}
+          {currentProvider === 'custom' && (
+            <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
+                    自定义提供商配置
+                  </h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">
+                    请输入您的自定义API地址和可选的API密钥
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
