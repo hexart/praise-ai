@@ -133,7 +133,9 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
 export function useProvider() {
   // 合并状态 - 减少状态管理复杂性
   const [state, setState] = useState<ProviderState>(() => {
-    const savedType = getFromStorage(STORAGE.TYPE, 'openai' as ProviderType);
+    // 从环境变量获取默认 Provider，如果没有则使用 'qwen'
+    const defaultProvider = import.meta.env.VITE_DEFAULT_PROVIDER || 'qwen';
+    const savedType = getFromStorage(STORAGE.TYPE, defaultProvider as ProviderType);
     const savedModel = getFromStorage(STORAGE.MODEL, null);
     const savedConnectedProvider = getFromStorage('connected_provider', null);
     const savedConnectedModel = getFromStorage('connected_model', null);
@@ -374,12 +376,12 @@ export function useProvider() {
     testConnection,
     setConnectionStatus, // 新增：设置连接状态的方法
     
-    // 简化的支持列表
+    // 简化的支持列表 - 根据环境变量过滤
     supportedProviders: [
-      { type: 'qwen' as ProviderType, name: '阿里千问', description: '阿里云通义千问', features: ['中文优化', '高性价比'] },
-      { type: 'openai' as ProviderType, name: 'OpenAI', description: 'OpenAI API', features: ['高质量', '快速'] },
-      { type: 'anthropic' as ProviderType, name: 'Claude', description: 'Anthropic Claude', features: ['安全', '长上下文'] },
-      { type: 'ollama' as ProviderType, name: '本地 Ollama', description: '本地部署', features: ['免费', '隐私'] },
+      ...(import.meta.env.VITE_ENABLE_QWEN !== 'false' ? [{ type: 'qwen' as ProviderType, name: '阿里千问', description: '阿里云通义千问', features: ['中文优化', '高性价比'] }] : []),
+      ...(import.meta.env.VITE_ENABLE_OPENAI !== 'false' ? [{ type: 'openai' as ProviderType, name: 'OpenAI', description: 'OpenAI API', features: ['高质量', '快速'] }] : []),
+      ...(import.meta.env.VITE_ENABLE_CLAUDE !== 'false' ? [{ type: 'anthropic' as ProviderType, name: 'Claude', description: 'Anthropic Claude', features: ['安全', '长上下文'] }] : []),
+      ...(import.meta.env.VITE_ENABLE_OLLAMA !== 'false' ? [{ type: 'ollama' as ProviderType, name: '本地 Ollama', description: '本地部署', features: ['免费', '隐私'] }] : []),
       { type: 'custom' as ProviderType, name: '自定义', description: '自定义 API 配置', features: ['灵活', '可扩展'] }
     ]
   };
