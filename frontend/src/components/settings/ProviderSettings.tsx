@@ -29,6 +29,20 @@ interface ProviderSettingsProps {
   isModelLoading?: boolean; // 新增：模型列表加载状态
 }
 
+// 获取默认模型的辅助函数
+const getDefaultModelForProvider = (providerType: ProviderType): string | null => {
+  switch (providerType) {
+    case 'openai':
+      return import.meta.env.VITE_OPENAI_DEFAULT_MODEL || null;
+    case 'anthropic':
+      return import.meta.env.VITE_CLAUDE_DEFAULT_MODEL || null;
+    case 'qwen':
+      return import.meta.env.VITE_QWEN_DEFAULT_MODEL || null;
+    default:
+      return null;
+  }
+};
+
 export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   providers,
   currentProvider,
@@ -51,6 +65,21 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   const [modelSwitching, setModelSwitching] = useState(false);
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [hasDefaultModel, setHasDefaultModel] = useState(false);
+
+  // 检查是否有默认模型
+  useEffect(() => {
+    const defaultModel = getDefaultModelForProvider(currentProvider);
+    setHasDefaultModel(!!defaultModel);
+    
+    // 如果有默认模型且当前没有选择模型，则自动选择默认模型
+    if (defaultModel && !currentModel) {
+      // 延迟执行以确保组件已完全加载
+      setTimeout(() => {
+        onModelSwitch(defaultModel).catch(logger.error);
+      }, 100);
+    }
+  }, [currentProvider, currentModel, onModelSwitch, logger]);
 
   // 点击外部关闭下拉菜单
   useEffect(() => {
@@ -106,7 +135,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     }
 
     // 对于非内置 Provider，检查配置是否有效
-    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
+    if (currentProvider !== 'openai' && currentProvider !== 'anthropic' && currentProvider !== 'qwen') {
       if (!currentConfig.apiUrl) {
         setTestStatus('error');
         setTestMessage('请填写完整的 API 配置（包括 API 地址）');
@@ -119,7 +148,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     }
 
     // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !import.meta.env.VITE_QWEN_KEY && !currentConfig.apiKey) {
       setTestStatus('error');
       setTestMessage('请配置 API 密钥');
       setTimeout(() => {
@@ -186,9 +215,9 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
   // 检查配置是否有效 - 统一处理所有 Provider
   const isConfigValid = () => {
     // 对于内置 Provider，不需要检查 apiUrl
-    if (currentProvider === 'openai' || currentProvider === 'anthropic') {
+    if (currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') {
       // 检查环境变量中的 API key
-      if (!import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+      if (!import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !import.meta.env.VITE_QWEN_KEY && !currentConfig.apiKey) {
         // 允许用户打开下拉菜单，但在获取模型时会提示需要填写 API 密钥
         return true;
       }
@@ -197,52 +226,41 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     
     // 对于其他 Provider，仍然需要检查 apiUrl
     if (!currentConfig.apiUrl) return false;
-
+    
     return true;
   };
 
-  // 处理模型下拉菜单点击 - 统一处理所有 Provider
+  // 处理模型下拉菜单点击
   const handleModelDropdownClick = async () => {
-    // 对于内置 Provider，不需要检查 apiUrl
-    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
-      // 检查基本配置是否有效
-      if (!currentConfig.apiUrl) {
-        return; // 不允许打开下拉菜单
-      }
+    // 如果没有默认模型，才允许打开下拉菜单
+    if (!hasDefaultModel) {
+      setModelDropdownOpen(!modelDropdownOpen);
     }
+    
+    // 如果下拉菜单关闭了，就不需要执行其他操作
+    if (modelDropdownOpen) return;
 
-    // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
-      logger.error('无法加载模型：请配置 API 密钥');
+    // 检查配置是否有效
+    if (!isConfigValid()) {
+      setTestStatus('error');
+      setTestMessage('请先完善API配置');
+      setTimeout(() => {
+        setTestStatus('idle');
+        setTestMessage('');
+      }, 3000);
       return;
     }
 
-    // 如果下拉菜单即将打开且模型列表为空，则自动刷新
-    if (!modelDropdownOpen && models.length === 0) {
-      await handleLoadModels();
+    // 如果模型列表为空，尝试加载模型
+    if (models.length === 0 && !isModelLoading) {
+      handleLoadModels();
     }
-    // 如果下拉菜单即将打开且模型列表不为空，也刷新以获取最新模型
-    else if (!modelDropdownOpen) {
-      handleLoadModels(); // 不等待，在后台刷新
-    }
-    setModelDropdownOpen(!modelDropdownOpen);
   };
 
-  // 处理模型加载 - 在加载前检查配置
+  // 处理加载模型
   const handleLoadModels = async () => {
-    if (isModelLoading) return; // 使用独立的模型加载状态
-
-    // 对于内置 Provider，不需要检查 apiUrl
-    if (currentProvider !== 'openai' && currentProvider !== 'anthropic') {
-      // 检查配置是否有效
-      if (!currentConfig.apiUrl) {
-        logger.error('无法加载模型：请先填写 API 地址');
-        return;
-      }
-    }
-
     // 对于需要 API 密钥的内置 Provider，检查环境变量中的 API key
-    if ((currentProvider === 'openai' || currentProvider === 'anthropic') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !currentConfig.apiKey) {
+    if ((currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') && !import.meta.env.VITE_OPENAI_KEY && !import.meta.env.VITE_CLAUDE_KEY && !import.meta.env.VITE_QWEN_KEY && !currentConfig.apiKey) {
       logger.error('无法加载模型：请配置 API 密钥');
       return;
     }
@@ -261,6 +279,8 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     switch (type) {
       case 'ollama':
         return <Server className="w-5 h-5" />;
+      case 'qwen':
+        return <Sparkles className="w-5 h-5" />;
       case 'openai':
       case 'anthropic':
       case 'gemini':
@@ -452,7 +472,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
           )}
 
           {/* 对于内置Provider，显示提示信息 */}
-          {(currentProvider === 'openai' || currentProvider === 'anthropic') && (
+          {(currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-0.5">
@@ -496,84 +516,110 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                 <Sparkles className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                 选择模型
               </label>
-              <button
-                onClick={handleLoadModels}
-                disabled={isModelLoading || !isConfigValid()}
-                className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-all duration-200 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RefreshCw className={`w-3 h-3 ${isModelLoading ? 'animate-spin' : ''}`} />
-                <span>刷新列表</span>
-              </button>
-            </div>
-            <div className="relative" data-dropdown>
-              <button
-                type="button"
-                onClick={handleModelDropdownClick}
-                disabled={isModelLoading || !isConfigValid() || isLoading}
-                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span className={`text-sm truncate ${currentModel ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
-                  {currentModel
-                    ? getModelDisplayName(models.find(m => m.id === currentModel))
-                    : `请选择模型 (共 ${models.length} 个可用)`
-                  }
-                </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''
-                    }`}
-                />
-              </button>
-
-              {/* 模型下拉菜单 - 现代化样式 */}
-              {modelDropdownOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl max-h-72 overflow-y-auto">
-                  {isModelLoading ? (
-                    <div className="px-4 py-8 text-center">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">加载模型列表...</span>
-                    </div>
-                  ) : models.length > 0 ? (
-                    <div className="py-2">
-                      {models.map((model) => (
-                        <button
-                          key={model.id}
-                          type="button"
-                          onClick={() => handleModelSwitch(model.id)}
-                          disabled={modelSwitching}
-                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 ${currentModel === model.id
-                              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
-                              : ''
-                            }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-semibold text-gray-900 dark:text-gray-100">{model.name}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                {model.family && `${model.family}${model.parameter_size ? ` • ${model.parameter_size}` : ''}`}
-                              </div>
-                            </div>
-                            {currentModel === model.id && (
-                              <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                                <Check className="w-3 h-3 text-white" />
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="px-4 py-8 text-center">
-                      <AlertCircle className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">暂无可用模型</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">请检查API配置是否正确</p>
-                    </div>
-                  )}
-                </div>
+              {!hasDefaultModel && (
+                <button
+                  onClick={handleLoadModels}
+                  disabled={isModelLoading || !isConfigValid()}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 transition-all duration-200 flex items-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isModelLoading ? 'animate-spin' : ''}`} />
+                  <span>刷新列表</span>
+                </button>
               )}
             </div>
+            
+            {!hasDefaultModel ? (
+              // 如果没有默认模型，显示下拉菜单
+              <div className="relative" data-dropdown>
+                <button
+                  type="button"
+                  onClick={handleModelDropdownClick}
+                  disabled={isModelLoading || !isConfigValid() || isLoading}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className={`text-sm truncate ${currentModel ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {currentModel
+                      ? getModelDisplayName(models.find(m => m.id === currentModel))
+                      : `请选择模型 (共 ${models.length} 个可用)`
+                    }
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''
+                      }`}
+                  />
+                </button>
+
+                {/* 模型下拉菜单 - 现代化样式 */}
+                {modelDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl max-h-72 overflow-y-auto">
+                    {isModelLoading ? (
+                      <div className="px-4 py-8 text-center">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">加载模型列表...</span>
+                      </div>
+                    ) : models.length > 0 ? (
+                      <div className="py-2">
+                        {models.map((model) => (
+                          <button
+                            key={model.id}
+                            type="button"
+                            onClick={() => handleModelSwitch(model.id)}
+                            disabled={modelSwitching}
+                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 ${currentModel === model.id
+                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
+                                : ''
+                              }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-semibold text-gray-900 dark:text-gray-100">{model.name}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                  {model.family && `${model.family}${model.parameter_size ? ` • ${model.parameter_size}` : ''}`}
+                                </div>
+                              </div>
+                              {currentModel === model.id && (
+                                <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-4 py-8 text-center">
+                        <AlertCircle className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">暂无可用模型</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">请检查API配置是否正确</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // 如果有默认模型，显示当前选择的模型信息
+              <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">
+                      {currentModel ? getModelDisplayName(models.find(m => m.id === currentModel)) : '默认模型'}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      已通过环境变量配置默认模型
+                    </div>
+                  </div>
+                  <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
               <Sparkles className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
-              选择要使用的AI模型，不同模型有不同的能力和特点
+              {hasDefaultModel 
+                ? '已配置默认模型，无需手动选择' 
+                : '选择要使用的AI模型，不同模型有不同的能力和特点'}
             </p>
           </div>
 

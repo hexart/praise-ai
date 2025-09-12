@@ -54,6 +54,9 @@ export abstract class BaseProvider implements IProvider {
       headers['x-api-key'] = import.meta.env.VITE_CLAUDE_KEY;
       headers['anthropic-version'] = '2023-06-01';
       headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    } else if (this.config.type === 'qwen' && import.meta.env.VITE_QWEN_KEY) {
+      headers['Authorization'] = `Bearer ${import.meta.env.VITE_QWEN_KEY}`;
+      headers['Content-Type'] = 'application/json';
     } else if (this.config.apiKey) {
       // 对于自定义 Provider 或其他情况，使用配置中的 API key
       if (this.config.type === 'anthropic') {
@@ -83,7 +86,38 @@ export abstract class BaseProvider implements IProvider {
     }
     
     // 否则使用直接URL
-    return `${this.config.apiUrl.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
+    const baseUrl = this.config.apiUrl.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.replace(/^\/+/, '');
+    
+    // 对于阿里千问Provider，确保使用兼容模式URL
+    if (this.config.type === 'qwen' && baseUrl.includes('dashscope.aliyuncs.com')) {
+      // 确保使用compatible-mode路径
+      if (!baseUrl.includes('compatible-mode')) {
+        // 如果URL不包含compatible-mode，添加它
+        const dashscopeIndex = baseUrl.indexOf('dashscope.aliyuncs.com');
+        if (dashscopeIndex !== -1) {
+          const protocolAndDomain = baseUrl.substring(0, dashscopeIndex + 'dashscope.aliyuncs.com'.length);
+          return `${protocolAndDomain}/compatible-mode/v1/${cleanEndpoint}`;
+        }
+      } else {
+        // 如果已经包含compatible-mode，直接添加endpoint
+        return `${baseUrl}/${cleanEndpoint}`;
+      }
+    }
+    
+    // 确保返回完整的URL而不是相对路径
+    if (baseUrl && !baseUrl.startsWith('http')) {
+      // 如果baseUrl不是完整的URL，尝试修复
+      console.warn('Base URL is not a complete URL:', baseUrl);
+      // 尝试从环境变量获取完整URL
+      if (this.config.type === 'qwen' && import.meta.env.VITE_QWEN_URL) {
+        return `${import.meta.env.VITE_QWEN_URL.replace(/\/+$/, '')}/${cleanEndpoint}`;
+      }
+      // 如果还是无法构建完整URL，返回相对路径（这可能会导致问题）
+      return `/${cleanEndpoint}`;
+    }
+    
+    return `${baseUrl}/${cleanEndpoint}`;
   }
 
   /**
@@ -118,11 +152,20 @@ export abstract class BaseProvider implements IProvider {
         };
       }
       
-      const data = await response.json();
-      return {
-        success: true,
-        data
-      };
+      // 尝试解析JSON，如果失败则返回空数据
+      try {
+        const data = await response.json();
+        return {
+          success: true,
+          data
+        };
+      } catch (parseError) {
+        console.warn(`Failed to parse JSON response from ${url}:`, parseError);
+        return {
+          success: true,
+          data: undefined
+        };
+      }
 
     } catch (error) {
       return {

@@ -3,6 +3,7 @@ import { BaseProvider } from '../providers/BaseProvider';
 import { OllamaProvider } from '../providers/OllamaProvider';
 import { OpenAIProvider } from '../providers/OpenAIProvider';
 import { ClaudeProvider } from '../providers/ClaudeProvider';
+import { QwenProvider } from '../providers/QwenProvider';
 import { CustomProvider } from '../providers/CustomProvider';
 import type { ProviderType, ProviderConfig, ModelInfo } from '../types/provider';
 import { getFromStorage, saveToStorage } from '../utils/storage';
@@ -50,6 +51,12 @@ const getDefaultConfig = (type: ProviderType): ProviderConfig => {
         apiUrl: import.meta.env.VITE_CLAUDE_URL || 'https://api.anthropic.com/v1',
         apiKey: import.meta.env.VITE_CLAUDE_KEY || ''
       };
+    case 'qwen':
+      return {
+        type: 'qwen',
+        apiUrl: import.meta.env.VITE_QWEN_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        apiKey: import.meta.env.VITE_QWEN_KEY || ''
+      };
     default:
       // 对于其他类型（如 gemini, custom），返回基础配置
       return {
@@ -69,11 +76,35 @@ const getFinalConfig = (type: ProviderType, userConfig?: ProviderConfig): Provid
   const storedConfig = getFromStorage<Partial<ProviderConfig>>(getProviderStorageKey(type), {});
   
   // 3. 合并配置：用户配置 > 本地存储 > 默认配置
-  return {
+  let finalConfig = {
     ...defaultConfig,
     ...storedConfig,
     ...userConfig
   };
+  
+  // 特殊处理：确保QwenProvider有正确的URL
+  if (type === 'qwen' && (!finalConfig.apiUrl || finalConfig.apiUrl === '')) {
+    finalConfig = {
+      ...finalConfig,
+      apiUrl: import.meta.env.VITE_QWEN_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    };
+  }
+  
+  return finalConfig;
+};
+
+// 获取默认模型的辅助函数
+const getDefaultModelForProvider = (providerType: ProviderType): string | null => {
+  switch (providerType) {
+    case 'openai':
+      return import.meta.env.VITE_OPENAI_DEFAULT_MODEL || null;
+    case 'anthropic':
+      return import.meta.env.VITE_CLAUDE_DEFAULT_MODEL || null;
+    case 'qwen':
+      return import.meta.env.VITE_QWEN_DEFAULT_MODEL || null;
+    default:
+      return null;
+  }
 };
 
 // 简单的 Provider 工厂
@@ -87,6 +118,9 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
     case 'anthropic':
       // Claude Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new ClaudeProvider(config);
+    case 'qwen':
+      // 阿里千问 Provider 可以在没有 API Key 时创建，在实际调用时再校验
+      return new QwenProvider(config);
     case 'custom':
       // Custom Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new CustomProvider(config);
@@ -162,6 +196,9 @@ export function useProvider() {
       const finalConfig = getFinalConfig(type, config);
       const provider = createProvider(type, finalConfig);
       
+      // 获取默认模型
+      const defaultModel = getDefaultModelForProvider(type);
+      
       // 更新状态，保留models列表但清空当前选中的模型，重置连接状态
       setState(prev => ({
         ...prev,
@@ -169,7 +206,7 @@ export function useProvider() {
         type,
         isLoading: false,
         error: null,
-        currentModel: null,
+        currentModel: defaultModel || null, // 如果有默认模型则使用，否则清空
         models: [], // 清空模型列表
         // 重置连接状态
         isConnected: false,
@@ -187,8 +224,8 @@ export function useProvider() {
       // 保存当前 Provider 的配置到专用存储键（无论是否有传入config参数）
       saveToStorage(getProviderStorageKey(type), finalConfig);
       
-      // 清空模型选择
-      saveToStorage(STORAGE.MODEL, null);
+      // 保存模型选择（如果有默认模型则保存默认模型）
+      saveToStorage(STORAGE.MODEL, defaultModel || null);
       
       // 清除连接状态的存储
       saveToStorage('connected_provider', null);
@@ -214,11 +251,26 @@ export function useProvider() {
       if (result.success && result.data) {
         const models = result.data.models;
         
+        // 检查是否有默认模型，如果没有当前模型则尝试设置默认模型
+        let newCurrentModel = state.currentModel;
+        if (!newCurrentModel) {
+          const defaultModel = getDefaultModelForProvider(state.type);
+          if (defaultModel && models.some(m => m.id === defaultModel)) {
+            newCurrentModel = defaultModel;
+          }
+        }
+        
         setState(prev => ({
           ...prev,
           models,
+          currentModel: newCurrentModel,
           isModelLoading: false
         }));
+        
+        // 如果设置了默认模型，保存到存储中
+        if (newCurrentModel) {
+          saveToStorage(STORAGE.MODEL, newCurrentModel);
+        }
       } else {
         setState(prev => ({ ...prev, isModelLoading: false }));
       }
@@ -226,7 +278,7 @@ export function useProvider() {
       setState(prev => ({ ...prev, isModelLoading: false }));
       setError(error instanceof Error ? error.message : 'Failed to load models');
     }
-  }, [state.provider, setError]);
+  }, [state.provider, state.currentModel, state.type, setError]);
 
   // 切换模型
   const switchModel = useCallback(async (modelName: string) => {
@@ -324,9 +376,10 @@ export function useProvider() {
     
     // 简化的支持列表
     supportedProviders: [
-      { type: 'ollama' as ProviderType, name: '本地 Ollama', description: '本地部署', features: ['免费', '隐私'] },
+      { type: 'qwen' as ProviderType, name: '阿里千问', description: '阿里云通义千问', features: ['中文优化', '高性价比'] },
       { type: 'openai' as ProviderType, name: 'OpenAI', description: 'OpenAI API', features: ['高质量', '快速'] },
       { type: 'anthropic' as ProviderType, name: 'Claude', description: 'Anthropic Claude', features: ['安全', '长上下文'] },
+      { type: 'ollama' as ProviderType, name: '本地 Ollama', description: '本地部署', features: ['免费', '隐私'] },
       { type: 'custom' as ProviderType, name: '自定义', description: '自定义 API 配置', features: ['灵活', '可扩展'] }
     ]
   };

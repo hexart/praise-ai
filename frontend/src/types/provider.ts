@@ -3,7 +3,7 @@ import type { ChatRequest, ChatResponse } from './chat';
 /**
  * Provider类型
  */
-export type ProviderType = 'ollama' | 'openai' | 'anthropic' | 'gemini' | 'custom';
+export type ProviderType = 'ollama' | 'openai' | 'anthropic' | 'qwen' | 'gemini' | 'custom';
 
 /**
  * Provider配置
