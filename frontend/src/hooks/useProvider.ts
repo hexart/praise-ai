@@ -3,6 +3,7 @@ import { BaseProvider } from '../providers/BaseProvider';
 import { OllamaProvider } from '../providers/OllamaProvider';
 import { OpenAIProvider } from '../providers/OpenAIProvider';
 import { ClaudeProvider } from '../providers/ClaudeProvider';
+import { CustomProvider } from '../providers/CustomProvider';
 import type { ProviderType, ProviderConfig, ModelInfo } from '../types/provider';
 import { getFromStorage, saveToStorage } from '../utils/storage';
 
@@ -86,6 +87,9 @@ const createProvider = (type: ProviderType, config: ProviderConfig): BaseProvide
     case 'anthropic':
       // Claude Provider 可以在没有 API Key 时创建，在实际调用时再校验
       return new ClaudeProvider(config);
+    case 'custom':
+      // Custom Provider 可以在没有 API Key 时创建，在实际调用时再校验
+      return new CustomProvider(config);
     default:
       // 对于其他 Provider 类型，抛出错误，确保只使用已知的 Provider 类型
       throw new Error(`Unsupported provider type: ${type}`);
@@ -166,6 +170,7 @@ export function useProvider() {
         isLoading: false,
         error: null,
         currentModel: null,
+        models: [], // 清空模型列表
         // 重置连接状态
         isConnected: false,
         connectedProvider: null,
@@ -321,7 +326,8 @@ export function useProvider() {
     supportedProviders: [
       { type: 'ollama' as ProviderType, name: '本地 Ollama', description: '本地部署', features: ['免费', '隐私'] },
       { type: 'openai' as ProviderType, name: 'OpenAI', description: 'OpenAI API', features: ['高质量', '快速'] },
-      { type: 'anthropic' as ProviderType, name: 'Claude', description: 'Anthropic Claude', features: ['安全', '长上下文'] }
+      { type: 'anthropic' as ProviderType, name: 'Claude', description: 'Anthropic Claude', features: ['安全', '长上下文'] },
+      { type: 'custom' as ProviderType, name: '自定义', description: '自定义 API 配置', features: ['灵活', '可扩展'] }
     ]
   };
 }

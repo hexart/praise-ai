@@ -25,7 +25,8 @@ export class OpenAIProvider extends BaseProvider {
     if (!this.config.apiUrl) {
       return 'API URL is required';
     }
-    if (!this.config.apiKey) {
+    // 对于内置 Provider，可以使用环境变量中的 API key
+    if (this.config.type === 'openai' && !this.config.apiKey && !import.meta.env.VITE_OPENAI_KEY) {
       return 'API key is required';
     }
     return null;
@@ -288,6 +289,11 @@ export class OpenAIProvider extends BaseProvider {
     }
 
     await this.handleStream(response, onChunk, onMetadata);
+  }
+
+  buildHeaders(): Record<string, string> {
+    // 使用基类的实现
+    return super.buildHeaders();
   }
 }
 

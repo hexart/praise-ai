@@ -47,8 +47,22 @@ export abstract class BaseProvider implements IProvider {
       ...this.config.headers
     };
 
-    if (this.config.apiKey) {
-      headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+    // 对于内置 Provider，优先使用环境变量中的 API key
+    if (this.config.type === 'openai' && import.meta.env.VITE_OPENAI_KEY) {
+      headers['Authorization'] = `Bearer ${import.meta.env.VITE_OPENAI_KEY}`;
+    } else if (this.config.type === 'anthropic' && import.meta.env.VITE_CLAUDE_KEY) {
+      headers['x-api-key'] = import.meta.env.VITE_CLAUDE_KEY;
+      headers['anthropic-version'] = '2023-06-01';
+      headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    } else if (this.config.apiKey) {
+      // 对于自定义 Provider 或其他情况，使用配置中的 API key
+      if (this.config.type === 'anthropic') {
+        headers['x-api-key'] = this.config.apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      } else {
+        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
+      }
     }
 
     return headers;

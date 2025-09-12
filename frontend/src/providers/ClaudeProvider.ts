@@ -20,13 +20,16 @@ export class ClaudeProvider extends BaseProvider {
   }
 
   /**
-   * 验证配置
-   */
+  验证配置
+  */
   protected validateConfig(): string | null {
     if (!this.config.apiUrl) {
       return 'API URL is required';
     }
-    // 在实际调用API时检查API密钥，而不是在创建实例时
+    // 对于内置 Provider，可以使用环境变量中的 API key
+    if (this.config.type === 'anthropic' && !this.config.apiKey && !import.meta.env.VITE_CLAUDE_KEY) {
+      return 'API key is required';
+    }
     return null;
   }
 
@@ -34,21 +37,8 @@ export class ClaudeProvider extends BaseProvider {
    * 构建请求头 - Claude API需要特殊的headers
    */
   protected buildHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      ...this.config.headers
-    };
-
-    // 只有在有 API 密钥时才设置认证头
-    if (this.config.apiKey) {
-      // Claude 需要特殊的头
-      headers['x-api-key'] = this.config.apiKey;
-      headers['anthropic-version'] = '2023-06-01';
-      headers['anthropic-dangerous-direct-browser-access'] = 'true';
-    }
-
-    return headers;
+    // 使用基类的实现
+    return super.buildHeaders();
   }
 
   /**
