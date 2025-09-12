@@ -482,9 +482,17 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                   <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
                     API密钥配置
                   </h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    API密钥已通过环境变量配置，无需在此处输入
-                  </p>
+                  {((currentProvider === 'openai' && import.meta.env.VITE_OPENAI_KEY) ||
+                    (currentProvider === 'anthropic' && import.meta.env.VITE_CLAUDE_KEY) ||
+                    (currentProvider === 'qwen' && import.meta.env.VITE_QWEN_KEY)) ? (
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      API密钥已通过环境变量配置，无需在此处输入
+                    </p>
+                  ) : (
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      请在环境变量中配置API密钥，或在本地创建 .env.local 文件进行配置
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
