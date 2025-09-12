@@ -471,7 +471,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
             </div>
           )}
 
-          {/* 对于内置Provider，显示提示信息 */}
+          {/* 对于内置Provider，根据环境变量显示不同配置选项 */}
           {(currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <div className="flex items-start space-x-3">
@@ -490,13 +490,62 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                     </p>
                   ) : (
                     <p className="text-sm text-blue-700 dark:text-blue-300">
-                      请在环境变量中配置API密钥，或在本地创建 .env.local 文件进行配置
+                      请在环境变量中配置API密钥，或在下方手动输入配置信息
                     </p>
                   )}
                 </div>
               </div>
             </div>
           )}
+
+          {/* 如果没有环境变量配置，则显示手动输入字段 */}
+          {((currentProvider === 'openai' && !import.meta.env.VITE_OPENAI_KEY) ||
+            (currentProvider === 'anthropic' && !import.meta.env.VITE_CLAUDE_KEY) ||
+            (currentProvider === 'qwen' && !import.meta.env.VITE_QWEN_KEY)) && (
+              <div>
+                <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  <Server className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  API地址
+                </label>
+                <input
+                  type="text"
+                  value={currentConfig.apiUrl || ''}
+                  onChange={(e) => onConfigUpdate({ apiUrl: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 text-gray-900 dark:text-gray-100"
+                  placeholder={
+                    currentProvider === 'openai' ? 'https://api.openai.com/v1' :
+                    currentProvider === 'anthropic' ? 'https://api.anthropic.com/v1' :
+                    'https://dashscope.aliyuncs.com/compatible-mode/v1'
+                  }
+                  disabled={isLoading}
+                />
+                <label className="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-2">
+                  <Eye className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  API密钥
+                </label>
+                <div className="relative">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={currentConfig.apiKey || ''}
+                    onChange={(e) => onConfigUpdate({ apiKey: e.target.value })}
+                    className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 focus:border-blue-500 dark:focus:border-blue-500 transition-all duration-200 text-gray-900 dark:text-gray-100 font-mono"
+                    placeholder={
+                      currentProvider === 'openai' ? 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' :
+                      currentProvider === 'anthropic' ? 'sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' :
+                      'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+                    }
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                  >
+                    {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            )}
 
           {/* 对于自定义Provider，显示配置提示 */}
           {currentProvider === 'custom' && (
