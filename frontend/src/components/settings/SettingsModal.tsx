@@ -630,6 +630,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       transform transition-transform duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       md:hidden
+      flex flex-col
     `}>
         {/* 移动端头部 */}
         <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
@@ -776,7 +777,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* 主内容区 - 添加滚动条美化 */}
-          <div className="flex-1 bg-white dark:bg-gray-900 ps-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          <div className="flex-1 pe-1 bg-white dark:bg-gray-900 ps-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
             {renderTabContent()}
           </div>
         </div>
