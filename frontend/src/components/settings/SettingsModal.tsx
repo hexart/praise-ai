@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react';
+import { Settings, Server, Bug, Download, Upload, RotateCcw, User, AlertTriangle, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -193,24 +193,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // 获取当前标签配置
   const currentTab = tabs.find(t => t.id === activeTab);
 
-  // 默认模式下拉菜单状态
-  const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
-
-  // 点击外部关闭下拉菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('[data-dropdown]')) {
-        setModeDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   // 渲染标签内容（共用函数）
   const renderTabContent = () => {
     switch (activeTab) {
@@ -254,94 +236,113 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* 默认模式 */}
               <div className="bg-white dark:bg-gray-800 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-                <label className="block">
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5 block">
+                <div className="mb-4">
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100">
                     默认聊天模式
-                  </span>
-                  <div className="relative" data-dropdown>
-                    <button
-                      type="button"
-                      onClick={() => setModeDropdownOpen(!modeDropdownOpen)}
-                      className="
-                        w-full flex items-center justify-between px-4 py-3
-                        bg-gray-50 dark:bg-gray-900/50
-                        border border-gray-200 dark:border-gray-700
-                        rounded-xl
-                        hover:border-blue-300 dark:hover:border-blue-600
-                        focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50
-                        transition-all duration-200
-                        text-left
-                      "
-                    >
-                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {MODE_CONFIGS[settings.defaultMode as keyof typeof MODE_CONFIGS]?.name || '选择模式'}
-                      </span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${modeDropdownOpen ? 'rotate-180' : ''
-                          }`}
-                      />
-                    </button>
-
-                    {/* 自定义下拉菜单 - 与模型列表相同样式 */}
-                    {modeDropdownOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl overflow-hidden">
-                        <div className="py-2">
-                          {Object.values(MODE_CONFIGS).map((mode) => {
-                            const ModeIcon = mode.icon;
-                            return (
-                              <button
-                                key={mode.id}
-                                type="button"
-                                onClick={() => {
-                                  onSettingsUpdate({ defaultMode: mode.id });
-                                  setModeDropdownOpen(false);
-                                }}
-                                className={`
-                    w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200
-                    ${settings.defaultMode === mode.id
-                                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
-                                    : ''
-                                  }
-                  `}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-3">
-                                    <div className={`
-                        p-2 rounded-lg
-                        ${settings.defaultMode === mode.id
-                                        ? 'bg-gradient-to-r ' + mode.gradient + ' text-white shadow-lg shadow-' + mode.gradient.split('-')[1] + '-500/20'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                                      }
-                      `}>
-                                      <ModeIcon className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                      <div className="font-medium text-gray-900 dark:text-gray-100">
-                                        {mode.name}
-                                      </div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                        {mode.description}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  {settings.defaultMode === mode.id && (
-                                    <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                                      <Check className="w-3 h-3 text-white" />
-                                    </div>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     选择启动时的默认对话模式
                   </p>
-                </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {Object.values(MODE_CONFIGS).map((mode) => {
+                    const ModeIcon = mode.icon;
+                    const isSelected = settings.defaultMode === mode.id;
+
+                    return (
+                      <label
+                        key={mode.id}
+                        className={`
+            relative flex items-start p-4 rounded-xl cursor-pointer
+            transition-all duration-300 transform hover:scale-[1.02]
+            ${isSelected
+                            ? 'bg-gradient-to-br ' + mode.gradient + ' shadow-lg'
+                            : 'bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-700'
+                          }
+          `}
+                        style={isSelected ? {
+                          boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 4px rgba(59, 130, 246, 0.3), 0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                        } : undefined}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultMode"
+                          value={mode.id}
+                          checked={isSelected}
+                          onChange={() => onSettingsUpdate({ defaultMode: mode.id })}
+                          className="sr-only"
+                        />
+
+                        <div className="flex-shrink-0 mt-0.5">
+                          <div className={`
+              w-5 h-5 rounded-full border-2 flex items-center justify-center
+              transition-all duration-300
+              ${isSelected
+                              ? 'border-white/80 bg-white shadow-md'
+                              : 'border-gray-300 dark:border-gray-600 bg-transparent'
+                            }
+            `}>
+                            {isSelected && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 animate-pulse" />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center space-x-2 mb-1.5">
+                            <div className={`
+                p-1.5 rounded-lg transition-all duration-300
+                ${isSelected
+                                ? 'bg-white/20 backdrop-blur-sm shadow-inner'
+                                : 'bg-gray-100 dark:bg-gray-800'
+                              }
+              `}>
+                              <ModeIcon className={`
+                  w-4 h-4 transition-colors
+                  ${isSelected ? 'text-white' : 'text-gray-500 dark:text-gray-400'}
+                `} />
+                            </div>
+                            <span className={`
+                font-semibold text-sm transition-colors
+                ${isSelected
+                                ? 'text-white'
+                                : 'text-gray-900 dark:text-gray-100'
+                              }
+              `}>
+                              {mode.name}
+                            </span>
+                          </div>
+                          <p className={`
+              text-xs leading-relaxed transition-colors line-clamp-2
+              ${isSelected
+                              ? 'text-white/90'
+                              : 'text-gray-500 dark:text-gray-400'
+                            }
+            `}>
+                            {mode.description}
+                          </p>
+                        </div>
+
+                        {isSelected && (
+                          <>
+                            <div className="absolute -inset-0.5 bg-gradient-to-r opacity-30 blur-md rounded-xl animate-pulse"
+                              style={{
+                                background: `linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to))`
+                              }}
+                            />
+
+                            <div className="absolute top-2 right-2">
+                              <div className="w-6 h-6 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <Check className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 自动保存 */}
@@ -369,7 +370,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                 <label className="block">
                   <div className="flex justify-between mb-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">最大历史记录</span>
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100">最大历史记录</h4>
                     <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{settings.maxHistoryLength}</span>
                   </div>
                   <input
