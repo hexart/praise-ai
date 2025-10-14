@@ -101,7 +101,7 @@ const ConnectionStatus: React.FC<{
           w-1.5 h-1.5 rounded-full transition-colors
           ${isConnected ? 'bg-emerald-500' : 'bg-gray-400'}
         `} />
-        <span className="truncate text-gray-600 dark:text-gray-400">
+        <span className="lg:max-w-56 truncate text-gray-600 dark:text-gray-400">
           {providerName}
         </span>
       </div>
