@@ -119,7 +119,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isUser && message.mode && debugMode && (
           <div className="mb-2 flex items-center space-x-2">
             {/* 模式指示器 */}
-            <div className="inline-flex items-center space-x-1 text-xs px-2 py-1 rounded-full bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 dark:from-purple-900/30 dark:to-indigo-900/30 dark:text-purple-300">
+            <div className="inline-flex items-center space-x-1 text-xs px-2 py-1 rounded-full bg-linear-to-r from-purple-100 to-indigo-100 text-purple-700 dark:from-purple-900/30 dark:to-indigo-900/30 dark:text-purple-300">
               <span>{formatChatMode(message.mode).icon}</span>
               <span>{formatChatMode(message.mode).name}</span>
             </div>
@@ -136,7 +136,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           className={`
         relative px-4 py-3 rounded-2xl shadow-sm
         ${isUser
-              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+              ? 'bg-linear-to-r from-blue-500 to-blue-600 text-white'
               : 'bg-white text-gray-800 border border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700'
             }
       `}
