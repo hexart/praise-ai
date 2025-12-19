@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Bot, Eye, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ChatMessage } from '../../types/chat';
 import { formatTimestamp, formatEmotionIntensity, formatChatMode } from '../../utils/formatters';
+import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -152,16 +153,24 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
 
           {/* 消息内容 */}
-          <div className="text-sm leading-relaxed whitespace-pre-wrap">
-            {message.content}
-            {isStreaming && message.content === '' && (
+          <div className="text-sm leading-relaxed">
+            {isStreaming && message.content === '' ? (
               <div className="flex items-center space-x-2">
                 <span className="text-gray-500 dark:text-gray-400">AI正在思考</span>
                 <TypingIndicator />
               </div>
-            )}
-            {isStreaming && message.content !== '' && (
-              <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
+            ) : (
+              <>
+                {/* AI 消息使用 Markdown 渲染，用户消息使用普通文本 */}
+                {isUser ? (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                ) : (
+                  <MarkdownRenderer content={message.content} />
+                )}
+                {isStreaming && message.content !== '' && (
+                  <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
+                )}
+              </>
             )}
           </div>
 
