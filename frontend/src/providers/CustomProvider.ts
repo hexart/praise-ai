@@ -256,7 +256,7 @@ export class CustomProvider extends BaseProvider {
       messages: this.buildMessages(request),
       stream: true,
       temperature: request.options?.temperature || 0.7,
-      max_tokens: request.options?.maxTokens || 1000
+      max_tokens: request.options?.maxTokens || 4096
     };
 
     const response = await fetch(this.buildUrl('chat/completions'), {
@@ -289,7 +289,7 @@ export class CustomProvider extends BaseProvider {
       messages: this.buildMessages(request),
       stream: false,
       temperature: request.options?.temperature || 0.7,
-      max_tokens: request.options?.maxTokens || 1000
+      max_tokens: request.options?.maxTokens || 4096
     };
 
     const result = await this.request<{

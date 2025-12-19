@@ -267,7 +267,7 @@ export class ClaudeProvider extends BaseProvider {
       system?: string;
     } = {
       model,
-      max_tokens: 4000,
+      max_tokens: 8192,
       messages,
       stream: true
     };
@@ -329,7 +329,7 @@ export class ClaudeProvider extends BaseProvider {
       system?: string;
     } = {
       model,
-      max_tokens: 4000,
+      max_tokens: 8192,
       messages
     };
 
