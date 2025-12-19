@@ -32,8 +32,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, inline }) =>
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // 内联代码
-  if (inline) {
+  // 内联代码：通过 inline 属性或者没有换行符来判断
+  const isInline = inline || !codeString.includes('\n');
+
+  if (isInline) {
     return (
       <code className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-sm font-mono text-red-600 dark:text-red-400">
         {children}

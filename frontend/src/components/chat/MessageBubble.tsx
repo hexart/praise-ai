@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Bot, Eye, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Bot, Eye, Brain, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import type { ChatMessage } from '../../types/chat';
 import { formatTimestamp, formatEmotionIntensity, formatChatMode } from '../../utils/formatters';
 import { MarkdownRenderer } from '../ui/MarkdownRenderer';
@@ -102,6 +102,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const isUser = message.role === 'user';
   const isSystem = message.role === 'system';
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // 系统消息特殊处理
   if (isSystem) {
@@ -174,14 +181,31 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             )}
           </div>
 
-          {/* 时间戳 */}
-          <div className={`text-xs mt-2 ${isUser ? 'text-blue-100 text-right' : 'text-gray-500 dark:text-gray-400'}`}>
-            {formatTimestamp(message.timestamp, 'absolute')}
-            {isStreaming && (
-              <span className="ml-2 inline-flex items-center">
-                <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
-                <span className="ml-1">实时回复中</span>
-              </span>
+          {/* 时间戳和复制按钮 */}
+          <div className={`flex items-center justify-between mt-2 text-xs ${isUser ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+            <div className="flex items-center">
+              {formatTimestamp(message.timestamp, 'absolute')}
+              {isStreaming && (
+                <span className="ml-2 inline-flex items-center">
+                  <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
+                  <span className="ml-1">实时回复中</span>
+                </span>
+              )}
+            </div>
+
+            {/* AI 消息复制按钮 */}
+            {!isUser && !isStreaming && message.content && (
+              <button
+                onClick={handleCopy}
+                className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                title="复制消息"
+              >
+                {copied ? (
+                  <Check className="w-3 h-3 text-green-600 dark:text-green-400" />
+                ) : (
+                  <Copy className="w-3 h-3" />
+                )}
+              </button>
             )}
           </div>
         </div>
