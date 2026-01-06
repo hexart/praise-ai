@@ -1,96 +1,60 @@
-/* Markdown 渲染样式 */
-@import "tailwindcss";
+/* Markdown 渲染样式 - 基于 @ant-design/x-markdown */
 
-/* 代码块样式 */
-.markdown-content pre {
-  @apply bg-gray-900 dark:bg-gray-950 rounded-b-lg overflow-x-auto p-4;
-  margin-top: 0 !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
+/* 引入 XMarkdown 官方主题 */
+@import '@ant-design/x-markdown/themes/light.css';
+@import '@ant-design/x-markdown/themes/dark.css';
+
+/* ============================================
+   自定义样式覆盖 - 仅保留必要的自定义
+   ============================================ */
+
+/* 通用样式 - 亮色和暗色模式共用 */
+.markdown-content.x-markdown-light,
+.markdown-content.x-markdown-dark {
+  /* 标题大小调整 */
+  --x-markdown-h1-font-size: 1.5rem;
+  --x-markdown-h2-font-size: 1.25rem;
+  --x-markdown-h3-font-size: 1.125rem;
+  --x-markdown-h4-font-size: 1rem;
+
+  /* 段落间距 */
+  --x-markdown-margin-block: 0.75rem;
+
+  /* 列表行高 */
+  --x-markdown-li-line-height: 1.75;
+  --x-markdown-p-line-height: 1.75;
+
+  /* 引用块 */
+  --x-markdown-blockquote-border-left-width: 4px;
+  --x-markdown-blockquote-font-style: italic;
+
+  /* 图片圆角 */
+  --x-markdown-img-border-radius: 0.5rem;
 }
 
-.markdown-content pre code {
-  @apply text-sm font-mono;
-  background: transparent !important;
-  padding: 0 !important;
+/* 亮色模式 - 红色代码 */
+.markdown-content.x-markdown-light {
+  --x-markdown-color-code-text: #dc2626;
 }
 
-/* 代码高亮主题覆盖 */
-.markdown-content pre code.hljs {
-  background: transparent !important;
-  padding: 0 !important;
+/* 暗色模式 - 浅红色代码 */
+.markdown-content.x-markdown-dark {
+  --x-markdown-color-code-text: #f87178;
 }
 
-/* 内联代码样式 */
-.markdown-content code {
-  @apply text-sm;
+/* 修复内联代码中的加粗样式 */
+.markdown-content code strong,
+.markdown-content code b {
+  font-weight: 700;
+  color: inherit;
 }
 
-/* 确保段落间距合适 */
-.markdown-content > *:first-child {
-  margin-top: 0 !important;
+.markdown-content.x-markdown-light code strong,
+.markdown-content.x-markdown-light code b {
+  color: #dc2626;
 }
 
-.markdown-content > *:last-child {
-  margin-bottom: 0 !important;
-}
-
-/* 链接悬停效果 */
-.markdown-content a {
-  @apply transition-colors duration-200;
-}
-
-.markdown-content a:hover {
-  @apply text-blue-700 dark:text-blue-300;
-}
-
-/* 列表样式微调 */
-.markdown-content ul,
-.markdown-content ol {
-  @apply space-y-2;
-}
-
-.markdown-content li > p {
-  @apply my-1;
-}
-
-/* 表格响应式 */
-.markdown-content table {
-  @apply text-sm;
-}
-
-/* 引用块样式增强 */
-.markdown-content blockquote {
-  @apply bg-gray-50 dark:bg-gray-800/50 rounded-r-lg py-2 pr-4;
-}
-
-/* 图片样式 */
-.markdown-content img {
-  @apply border border-gray-200 dark:border-gray-700;
-}
-
-/* 代码块滚动条样式 */
-.markdown-content pre::-webkit-scrollbar {
-  height: 8px;
-}
-
-.markdown-content pre::-webkit-scrollbar-track {
-  @apply bg-gray-800 dark:bg-gray-900;
-}
-
-.markdown-content pre::-webkit-scrollbar-thumb {
-  @apply bg-gray-600 dark:bg-gray-700 rounded;
-}
-
-.markdown-content pre::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500 dark:bg-gray-600;
-}
-
-/* 任务列表样式 (GFM) */
-.markdown-content input[type="checkbox"] {
-  @apply mr-2;
-}
-
-.markdown-content li:has(> input[type="checkbox"]) {
-  @apply list-none;
+.markdown-content.x-markdown-dark code strong,
+.markdown-content.x-markdown-dark code b {
+  color: #f87178;
 }

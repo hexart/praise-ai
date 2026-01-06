@@ -172,7 +172,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 {isUser ? (
                   <div className="whitespace-pre-wrap">{message.content}</div>
                 ) : (
-                  <MarkdownRenderer content={message.content} />
+                  <MarkdownRenderer content={message.content} isStreaming={isStreaming} />
                 )}
                 {isStreaming && message.content !== '' && (
                   <span className="inline-block w-2 h-4 bg-current animate-pulse ml-1" />
