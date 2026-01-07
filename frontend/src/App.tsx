@@ -61,14 +61,6 @@ export const App: React.FC = () => {
     }
   }, [currentMessage, selectedMode, chat]);
 
-  // 处理键盘事件
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }, [handleSendMessage]);
-
   // 处理清空历史
   const handleClearHistory = useCallback(() => {
     if (confirm('确定要清空所有聊天记录吗？')) {
@@ -295,7 +287,6 @@ export const App: React.FC = () => {
         value={currentMessage}
         onChange={setCurrentMessage}
         onSend={handleSendMessage}
-        onKeyDown={handleKeyDown}
         disabled={chat.isLoading || !provider.provider}
         currentMode={selectedMode}
         maxLength={2000}

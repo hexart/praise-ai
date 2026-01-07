@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Send, Mic, MicOff, Smile, Paperclip } from 'lucide-react';
+import { Sender } from '@ant-design/x';
 import type { ChatMode } from '../../types/chat';
 import { MODE_CONFIGS } from '../../constants/modes';
 
@@ -7,55 +8,46 @@ interface InputAreaProps {
   value: string;
   onChange: (value: string) => void;
   onSend: () => void;
-  onKeyDown?: (e: React.KeyboardEvent) => void;
   disabled?: boolean;
   currentMode: ChatMode;
   maxLength?: number;
 }
 
 /**
- * 输入区域组件
+ * 输入区域组件 - 使用 Ant Design X Sender
  */
 export const InputArea: React.FC<InputAreaProps> = ({
   value,
   onChange,
   onSend,
-  onKeyDown,
   disabled = false,
   currentMode,
   maxLength = 2000
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const senderRef = useRef<any>(null);
 
-  // 自动调整textarea高度
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const scrollHeight = textarea.scrollHeight;
-      const maxHeight = 200; // 增加最大高度
-      textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+  // 处理发送
+  const handleSubmit = (message: string) => {
+    if (message.trim() && !disabled) {
+      onSend();
     }
-  }, [value]);
+  };
 
   // 处理键盘事件
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (value.trim() && !disabled) {
         onSend();
       }
     }
-    onKeyDown?.(e);
   };
 
-  // 处理发送
-  const handleSend = () => {
-    if (value.trim() && !disabled) {
-      onSend();
-    }
+  // 处理值变化
+  const handleChange = (val: string) => {
+    onChange(val);
   };
 
   // 语音录制相关（占位实现）
@@ -179,102 +171,121 @@ export const InputArea: React.FC<InputAreaProps> = ({
               )}
             </div>
 
-            {/* 输入区域容器 */}
-            <div className="flex items-end">
-              {/* 左侧工具按钮 */}
-              <div className="flex items-center space-x-1 px-2 pb-3">
-                <button
-                  onClick={handleAttachment}
-                  disabled={disabled}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 
-                    rounded-lg transition-all duration-200
-                    dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
-                    disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="添加附件"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
+            {/* 使用 Sender 组件 */}
+            <Sender
+              ref={senderRef}
+              value={value}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+              onKeyDown={handleKeyDown}
+              placeholder={modeConfig.placeholder}
+              disabled={disabled}
+              loading={disabled}
+              submitType="enter"
+              autoSize={{
+                minRows: 1,
+                maxRows: 1
+              }}
+              allowSpeech={{
+                recording: isRecording,
+                onRecordingChange: (recording) => setIsRecording(recording)
+              }}
+              classNames={{
+                input: `
+                  px-4 py-3
+                  text-gray-900 placeholder-gray-400
+                  dark:text-gray-100 dark:placeholder-gray-500
+                  ${disabled ? 'cursor-not-allowed opacity-50' : ''}
+                `,
+                root: 'ant-sender-no-border input-area-sender'
+              }}
+              styles={{
+                input: {
+                  minHeight: '48px',
+                  fontSize: '16px',
+                  lineHeight: '1.5rem'
+                },
+                // 移除根元素的边框和圆角
+                root: {
+                  border: 'none',
+                  borderRadius: 0
+                }
+              }}
+              // 自定义左侧按钮
+              prefix={
+                <div className="flex items-center space-x-1 pl-2 h-full">
+                  <button
+                    onClick={handleAttachment}
+                    disabled={disabled}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                      rounded-lg transition-all duration-200
+                      dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
+                      disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="添加附件"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </button>
 
-                <button
-                  onClick={handleEmojiClick}
-                  disabled={disabled}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 
-                    rounded-lg transition-all duration-200
-                    dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
-                    disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="添加表情"
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-              </div>
+                  <button
+                    onClick={handleEmojiClick}
+                    disabled={disabled}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                      rounded-lg transition-all duration-200
+                      dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
+                      disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="添加表情"
+                  >
+                    <Smile className="w-4 h-4" />
+                  </button>
+                </div>
+              }
+              // 自定义右侧按钮
+              suffix={
+                <div className="flex items-center space-x-2 pr-2 h-full">
+                  {/* 语音按钮 */}
+                  <button
+                    onClick={handleVoiceToggle}
+                    disabled={disabled}
+                    className={`
+                      p-2.5 rounded-xl transition-all duration-200
+                      ${isRecording
+                        ? 'text-white bg-red-500 hover:bg-red-600 animate-pulse'
+                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                      }
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                    `}
+                    title={isRecording ? '停止录音' : '语音输入'}
+                  >
+                    {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </button>
 
-              {/* 文本输入框 */}
-              <div className="flex-1 pe-2">
-                <textarea
-                  ref={textareaRef}
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  placeholder={modeConfig.placeholder}
-                  disabled={disabled}
-                  rows={1}
-                  className={`
-                    w-full px-2 py-3 bg-transparent resize-none
-                    focus:outline-none text-gray-900 placeholder-gray-400
-                    min-h-12 max-h-50 leading-6
-                    text-base scrollbar-thin scrollbar-thumb-gray-300 
-                    dark:scrollbar-thumb-gray-600
-                    ${disabled ? 'cursor-not-allowed opacity-50' : ''}
-                    dark:text-gray-100 dark:placeholder-gray-500
-                  `}
-                />
-              </div>
-
-              {/* 右侧工具按钮 */}
-              <div className="flex items-center space-x-2 px-3 pb-3">
-                {/* 语音按钮 */}
-                <button
-                  onClick={handleVoiceToggle}
-                  disabled={disabled}
-                  className={`
-                    p-2.5 rounded-xl transition-all duration-200
-                    ${isRecording
-                      ? 'text-white bg-red-500 hover:bg-red-600 animate-pulse'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
-                    }
-                    disabled:opacity-40 disabled:cursor-not-allowed
-                  `}
-                  title={isRecording ? '停止录音' : '语音输入'}
-                >
-                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </button>
-
-                {/* 发送按钮 */}
-                <button
-                  onClick={handleSend}
-                  disabled={!canSend}
-                  className={`
-                    relative p-2.5 rounded-xl transition-all duration-200
-                    ${canSend
-                      ? `bg-linear-to-r ${modeConfig.borderGradient} text-white hover:shadow-lg hover:scale-105`
-                      : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
-                    }
-                    disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none
-                  `}
-                  title="发送消息 (Enter)"
-                >
-                  <Send className={`w-4 h-4 ${canSend ? 'animate-none' : ''}`} />
-                  {canSend && (
-                    <div className={`
-                      absolute inset-0 rounded-xl bg-linear-to-r ${modeConfig.borderGradient}
-                      opacity-20 blur animate-pulse
-                    `} />
-                  )}
-                </button>
-              </div>
-            </div>
+                  {/* 发送按钮 - 自定义样式 */}
+                  <button
+                    onClick={() => handleSubmit(value)}
+                    disabled={!canSend}
+                    className={`
+                      relative p-2.5 rounded-xl transition-all duration-200
+                      ${canSend
+                        ? `bg-linear-to-r ${modeConfig.borderGradient} text-white hover:shadow-lg hover:scale-105`
+                        : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                      }
+                      disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none
+                    `}
+                    title="发送消息 (Enter)"
+                  >
+                    <Send className={`w-4 h-4 ${canSend ? 'animate-none' : ''}`} />
+                    {canSend && (
+                      <div className={`
+                        absolute inset-0 rounded-xl bg-linear-to-r ${modeConfig.borderGradient}
+                        opacity-20 blur animate-pulse
+                      `} />
+                    )}
+                  </button>
+                </div>
+              }
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+            />
           </div>
         </div>
 
