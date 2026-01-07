@@ -121,7 +121,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
       {/* 背景渐变效果 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-t from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto px-4 pb-6 pt-2">
         {/* 主输入容器 */}
@@ -132,7 +132,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
           {/* 渐变边框效果 */}
           {isFocused && (
             <div className={`
-              absolute -inset-[2px] bg-gradient-to-r ${modeConfig.borderGradient}
+              absolute -inset-0.5 bg-linear-to-r ${modeConfig.borderGradient}
               rounded-2xl opacity-30 blur-sm animate-pulse
             `} />
           )}
@@ -151,7 +151,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                 {/* 模式指示器 - 使用 MODE_CONFIGS 中的图标 */}
                 <div className={`
                   flex items-center space-x-2 px-3 py-1 rounded-full
-                  bg-gradient-to-r ${modeConfig.gradient}
+                  bg-linear-to-r ${modeConfig.gradient}
                   text-${modeConfig.accentColor}-600 dark:text-${modeConfig.accentColor}-400
                   text-sm font-medium
                 `}>
@@ -223,7 +223,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                   className={`
                     w-full px-2 py-3 bg-transparent resize-none
                     focus:outline-none text-gray-900 placeholder-gray-400
-                    min-h-[48px] max-h-[200px] leading-6
+                    min-h-12 max-h-50 leading-6
                     text-base scrollbar-thin scrollbar-thumb-gray-300 
                     dark:scrollbar-thumb-gray-600
                     ${disabled ? 'cursor-not-allowed opacity-50' : ''}
@@ -258,7 +258,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                   className={`
                     relative p-2.5 rounded-xl transition-all duration-200
                     ${canSend
-                      ? `bg-gradient-to-r ${modeConfig.borderGradient} text-white hover:shadow-lg hover:scale-105`
+                      ? `bg-linear-to-r ${modeConfig.borderGradient} text-white hover:shadow-lg hover:scale-105`
                       : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
                     }
                     disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none
@@ -268,7 +268,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
                   <Send className={`w-4 h-4 ${canSend ? 'animate-none' : ''}`} />
                   {canSend && (
                     <div className={`
-                      absolute inset-0 rounded-xl bg-gradient-to-r ${modeConfig.borderGradient}
+                      absolute inset-0 rounded-xl bg-linear-to-r ${modeConfig.borderGradient}
                       opacity-20 blur animate-pulse
                     `} />
                   )}

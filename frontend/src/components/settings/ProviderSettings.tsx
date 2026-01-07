@@ -311,7 +311,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
     <div className="space-y-4">
       {/* Provider选择 - 保持下拉菜单但现代化设计 */}
       <div>
-        <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-4">
+        <h3 className="text-lg font-bold bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent mb-4">
           选择API提供商
         </h3>
         <div className="relative" data-dropdown>
@@ -322,7 +322,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
             disabled={isLoading}
           >
             <div className="flex items-center space-x-4">
-              <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
+              <div className="p-3 rounded-xl bg-linear-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
                 {getProviderIcon(currentProvider)}
               </div>
               <div className="text-left">
@@ -354,7 +354,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                     } first:rounded-t-2xl last:rounded-b-2xl`}
                 >
                   <div className={`p-2.5 rounded-xl mt-0.5 ${currentProvider === provider.type
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
+                      ? 'bg-linear-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                     {getProviderIcon(provider.type)}
@@ -363,7 +363,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-gray-900 dark:text-gray-100">{provider.name}</span>
                       {currentProvider === provider.type && (
-                        <span className="text-xs bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2.5 py-1 rounded-full font-semibold shadow-sm">
+                        <span className="text-xs bg-linear-to-r from-blue-500 to-blue-600 text-white px-2.5 py-1 rounded-full font-semibold shadow-sm">
                           当前使用
                         </span>
                       )}
@@ -392,7 +392,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                   </div>
                   {currentProvider === provider.type && (
                     <div className="mt-1">
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30">
+                      <div className="w-6 h-6 bg-linear-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30">
                         <CheckCircle className="w-4 h-4 text-white" />
                       </div>
                     </div>
@@ -431,7 +431,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                 disabled={isLoading}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
-                <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-3 h-3 mr-1 mt-0.5 shrink-0" />
                 {currentProvider === 'ollama'
                   ? '本地Ollama服务的API地址（OpenAI兼容格式）'
                   : '兼容OpenAI格式的API端点地址，确保以"/v1"结尾'
@@ -465,7 +465,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                 </button>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
-                <AlertCircle className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-3 h-3 mr-1 mt-0.5 shrink-0" />
                 请确保API密钥安全，不要泄露给他人
               </p>
             </div>
@@ -475,7 +475,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
           {(currentProvider === 'openai' || currentProvider === 'anthropic' || currentProvider === 'qwen') && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 mt-0.5">
+                <div className="shrink-0 mt-0.5">
                   <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -551,7 +551,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
           {currentProvider === 'custom' && (
             <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
               <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 mt-0.5">
+                <div className="shrink-0 mt-0.5">
                   <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
@@ -623,7 +623,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                             onClick={() => handleModelSwitch(model.id)}
                             disabled={modelSwitching}
                             className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 ${currentModel === model.id
-                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
+                                ? 'bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20'
                                 : ''
                               }`}
                           >
@@ -635,7 +635,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                                 </div>
                               </div>
                               {currentModel === model.id && (
-                                <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                <div className="w-5 h-5 bg-linear-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                                   <Check className="w-3 h-3 text-white" />
                                 </div>
                               )}
@@ -665,7 +665,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
                       已通过环境变量配置默认模型
                     </div>
                   </div>
-                  <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 bg-linear-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
@@ -673,7 +673,7 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
             )}
             
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-start">
-              <Sparkles className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" />
+              <Sparkles className="w-3 h-3 mr-1 mt-0.5 shrink-0" />
               {hasDefaultModel 
                 ? '已配置默认模型，无需手动选择' 
                 : '选择要使用的AI模型，不同模型有不同的能力和特点'}
@@ -691,10 +691,10 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
               ${testStatus === 'testing'
                   ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                   : testStatus === 'success'
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-green-500/25'
+                    ? 'bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-green-500/25'
                     : testStatus === 'error'
-                      ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-red-500/25'
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02]'
+                      ? 'bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-red-500/25'
+                      : 'bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02]'
                 }
             `}
             >
@@ -734,11 +734,11 @@ export const ProviderSettings: React.FC<ProviderSettingsProps> = ({
             `}>
                 <div className="flex items-start space-x-2">
                   {testStatus === 'success' ? (
-                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
                   ) : testStatus === 'error' ? (
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                   ) : (
-                    <RefreshCw className="w-4 h-4 mt-0.5 flex-shrink-0 animate-spin" />
+                    <RefreshCw className="w-4 h-4 mt-0.5 shrink-0 animate-spin" />
                   )}
                   <span>{testMessage}</span>
                 </div>

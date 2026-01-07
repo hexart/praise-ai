@@ -257,7 +257,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             relative flex items-start p-4 rounded-xl cursor-pointer
             transition-all duration-300 transform hover:scale-[1.02]
             ${isSelected
-                            ? 'bg-gradient-to-br ' + mode.gradient + ' shadow-lg'
+                            ? 'bg-linear-to-br ' + mode.gradient + ' shadow-lg'
                             : 'bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70 border border-gray-200 dark:border-gray-700'
                           }
           `}
@@ -274,7 +274,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className="sr-only"
                         />
 
-                        <div className="flex-shrink-0 mt-0.5">
+                        <div className="shrink-0 mt-0.5">
                           <div className={`
               w-5 h-5 rounded-full border-2 flex items-center justify-center
               transition-all duration-300
@@ -284,7 +284,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             }
             `}>
                             {isSelected && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 animate-pulse" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-linear-to-rrom-blue-600 to-indigo-600 animate-pulse" />
                             )}
                           </div>
                         </div>
@@ -326,7 +326,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                         {isSelected && (
                           <>
-                            <div className="absolute -inset-0.5 bg-gradient-to-r opacity-30 blur-md rounded-xl animate-pulse"
+                            <div className="absolute -inset-0.5 bg-linear-to-r opacity-30 blur-md rounded-xl animate-pulse"
                               style={{
                                 background: `linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to))`
                               }}
@@ -361,7 +361,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => onSettingsUpdate({ autoSave: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
               </div>
@@ -390,7 +390,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* 调试模式 */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+              <div className="bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg">
@@ -410,7 +410,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onChange={(e) => onSettingsUpdate({ debugMode: e.target.checked })}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
                   </label>
                 </div>
               </div>
@@ -426,7 +426,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-6">
             <div className="space-y-4">
               {/* 应用信息卡片 */}
-              <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
+              <div className="bg-linear-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-pink-950/30 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
                 <h4 className="font-bold text-xl text-gray-900 mb-2 dark:text-white">舔狗&夸夸 AI</h4>
                 <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                   <p>版本：v2.0.0</p>
@@ -498,7 +498,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       return (
         <div className="space-y-6">
           <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
             <div>
               <h3 className="font-medium text-gray-900 dark:text-gray-100">确认重置所有数据？</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -642,7 +642,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+              <h2 className="text-lg font-bold bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
                 设置
               </h2>
             </div>
@@ -652,7 +652,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`
               flex items-center space-x-2 px-4 py-2 rounded-full
-              bg-gradient-to-r ${currentTab?.color || 'from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700'}
+              bg-linear-to-r ${currentTab?.color || 'from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700'}
               shadow-sm transition-all duration-200 hover:shadow-md
             `}
             >
@@ -683,14 +683,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     w-full flex items-center space-x-3 px-5 py-3.5
                     transition-all duration-200
                     ${isActive
-                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 text-blue-700 dark:text-blue-300'
+                        ? 'bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 text-blue-700 dark:text-blue-300'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       }
                   `}
                   >
                     <div className={`
                     p-2.5 rounded-xl transition-colors
-                    ${isActive ? 'bg-gradient-to-r ' + tab.color : 'bg-gray-100 dark:bg-gray-700'}
+                    ${isActive ? 'bg-linear-to-r ' + tab.color : 'bg-gray-100 dark:bg-gray-700'}
                   `}>
                       <Icon className="w-4 h-4" />
                     </div>
@@ -719,7 +719,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         size="xl"
         className="hidden md:block rounded-2xl"
       >
-        <div className="flex h-[500px]">
+        <div className="flex h-125">
           {/* 侧边栏 - 现代化设计 */}
           <div className="w-54 dark:bg-gray-900 pe-6 border-r border-gray-200 dark:border-gray-800">
             <nav className="space-y-2">

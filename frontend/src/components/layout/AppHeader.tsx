@@ -58,7 +58,7 @@ const ModeTabs: React.FC<{
             {isSelected && (
               <div className={`
                 absolute bottom-0 left-2 right-2 h-0.5 
-                bg-gradient-to-r ${config.gradient} 
+                bg-linear-to-r ${config.gradient} 
                 rounded-full
               `} />
             )}
@@ -166,7 +166,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               <div className="flex items-center space-x-3 lg:space-x-4">
                 {/* Logo和标题 */}
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-8 h-8 bg-linear-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
                     <Heart className="w-4.5 h-4.5 text-white" />
                   </div>
                   <div className="block">
@@ -272,7 +272,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                             `}
                           >
-                            <IconComponent className="w-4 h-4 flex-shrink-0" />
+                            <IconComponent className="w-4 h-4 shrink-0" />
                             <div className="flex-1 text-left">
                               <div className="font-medium">{config.name}</div>
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -280,7 +280,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                               </div>
                             </div>
                             {isSelected && (
-                              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             )}

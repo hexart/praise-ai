@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import './toast.css';
 @import './scrollbar.css';
-@import './styles/markdown.css';
 
 /* 关键配置：覆盖默认暗色模式行为 */
 @custom-variant dark (&:where(.dark, .dark *));

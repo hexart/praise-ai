@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { ConfigProvider, theme as antdTheme } from 'antd';
 import { AppHeader } from './components/layout/AppHeader';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { InputArea } from './components/chat/InputArea';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { Toaster } from './components/ui/Toaster';
 import { useApp } from './hooks/useApp';
-import { initializeTheme } from './hooks/useTheme';
+import { initializeTheme, useTheme } from './hooks/useTheme';
 import { toast } from 'sonner';
 import type { ChatMode } from './types/chat';
 import type { ProviderType, ProviderConfig } from './types/provider';
@@ -18,6 +19,9 @@ initializeTheme();
 export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('');
+
+  // 获取主题
+  const { resolvedTheme } = useTheme();
 
   // 使用主Hook
   const {
@@ -82,6 +86,56 @@ export const App: React.FC = () => {
       description: `${MODE_CONFIGS[mode].description}`
     });
   }, []);
+
+  // 处理提示点击 - 生成范例提示词
+  const handlePromptClick = useCallback((prompt: string) => {
+    // 根据不同模式和示例生成合适的用户输入范例
+    let examplePrompt = '';
+
+    switch (selectedMode) {
+      case 'praise':
+        // 夸夸模式：生成积极的分享范例
+        if (prompt.includes('完成了一个项目')) {
+          examplePrompt = '我今天完成了一个项目，感觉很有成就感！';
+        } else if (prompt.includes('学会了新技能')) {
+          examplePrompt = '我最近学会了一项新技能，觉得自己进步很大！';
+        } else if (prompt.includes('帮助了朋友')) {
+          examplePrompt = '我今天帮助了一位朋友解决问题，很开心能帮上忙！';
+        } else {
+          examplePrompt = `${prompt}，我觉得自己做得不错！`;
+        }
+        break;
+
+      case 'comfort':
+        // 安慰模式：生成需要安慰的表达范例
+        if (prompt.includes('有点累')) {
+          examplePrompt = '今天有点累，工作压力很大，感觉有点焦虑...';
+        } else if (prompt.includes('遇到了困难')) {
+          examplePrompt = '最近遇到了一些困难，有点不知道该怎么办了';
+        } else if (prompt.includes('心情不太好')) {
+          examplePrompt = '今天心情不太好，感觉很低落，想找个人说说话';
+        } else {
+          examplePrompt = `${prompt}，希望能得到一些安慰和鼓励`;
+        }
+        break;
+
+      case 'smart':
+      default:
+        // 智能模式：生成自然的对话范例
+        if (prompt.includes('今天过得怎么样')) {
+          examplePrompt = '我今天还不错，有些小进展，也有一些挑战';
+        } else if (prompt.includes('聊聊最近的事')) {
+          examplePrompt = '最近工作上有些变化，想聊聊我的感受和想法';
+        } else if (prompt.includes('想法分享')) {
+          examplePrompt = '最近有一些新的想法，希望能和你探讨一下';
+        } else {
+          examplePrompt = prompt;
+        }
+        break;
+    }
+
+    setCurrentMessage(examplePrompt);
+  }, [selectedMode]);
 
   // 处理Provider切换
   const handleProviderChange = useCallback(async (type: ProviderType, config?: ProviderConfig) => {
@@ -167,26 +221,34 @@ export const App: React.FC = () => {
   }, [error]);
 
   return (
-    <div className="min-h-screen flex flex-col pt-24 md:pt-21">
-      {/* 头部 */}
-      <AppHeader
-        selectedMode={selectedMode}
-        onModeChange={handleModeChange}
-        onSettingsClick={() => setIsSettingsOpen(true)}
-        onClearHistory={handleClearHistory}
-        // onStatsClick={handleStatsClick} // 如果有统计功能的话
-        isConnected={provider.isConnected}
-        providerName={
-          provider.isConnected && provider.connectedProvider && provider.connectedModel
-            ? `${provider.supportedProviders.find(p => p.type === provider.connectedProvider)?.name || provider.connectedProvider} (${provider.connectedModel})`
-            : provider.provider
-              ? (provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType)
-              : '未配置'
-        }
-        messageCount={chat.chatHistory.length}
-        isLoading={chat.isLoading}
-        disabled={chat.isLoading || !provider.provider}
-      />
+    <ConfigProvider
+      theme={{
+        algorithm: resolvedTheme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+          borderRadius: 8,
+        },
+      }}
+    >
+      <div className="min-h-screen flex flex-col pt-24 md:pt-21">
+        {/* 头部 */}
+        <AppHeader
+          selectedMode={selectedMode}
+          onModeChange={handleModeChange}
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          onClearHistory={handleClearHistory}
+          // onStatsClick={handleStatsClick} // 如果有统计功能的话
+          isConnected={provider.isConnected}
+          providerName={
+            provider.isConnected && provider.connectedProvider && provider.connectedModel
+              ? `${provider.supportedProviders.find(p => p.type === provider.connectedProvider)?.name || provider.connectedProvider} (${provider.connectedModel})`
+              : provider.provider
+                ? (provider.supportedProviders.find(p => p.type === provider.providerType)?.name || provider.providerType)
+                : '未配置'
+          }
+          messageCount={chat.chatHistory.length}
+          isLoading={chat.isLoading}
+          disabled={chat.isLoading || !provider.provider}
+        />
 
       {/* 主内容区 */}
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -199,6 +261,7 @@ export const App: React.FC = () => {
           debugInfo={chat.lastDebugInfo}
           hasProvider={!!provider.provider}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onPromptClick={handlePromptClick}
           className="flex-1"
         />
       </main>
@@ -241,6 +304,7 @@ export const App: React.FC = () => {
       {/* 使用自定义 Toaster 组件 */}
       <Toaster />
     </div>
+    </ConfigProvider>
   );
 };
 
