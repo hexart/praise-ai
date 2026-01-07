@@ -334,6 +334,7 @@ export function useProvider() {
 
   // 自动初始化
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     initProvider();
   }, [initProvider]); // 包含 initProvider 依赖
 

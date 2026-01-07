@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Send, Mic, MicOff, Smile, Paperclip } from 'lucide-react';
+import { Send, Mic, Square, Smile, Paperclip } from 'lucide-react';
 import { Sender } from '@ant-design/x';
+import type { SenderRef } from '@ant-design/x/es/sender';
 import type { ChatMode } from '../../types/chat';
 import { MODE_CONFIGS } from '../../constants/modes';
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
+import { toast } from 'sonner';
 
 interface InputAreaProps {
   value: string;
@@ -25,8 +28,30 @@ export const InputArea: React.FC<InputAreaProps> = ({
   maxLength = 2000
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const senderRef = useRef<any>(null);
+  const senderRef = useRef<SenderRef | null>(null);
+
+  // 语音识别
+  const speech = useSpeechRecognition({
+    language: 'zh-CN',
+    continuous: false,
+    interimResults: true,
+    onResult: (transcript, isFinal) => {
+      // 实时显示识别结果（包括临时结果）
+      onChange(transcript);
+
+      if (isFinal) {
+        // 识别完成，显示提示
+        toast.success('语音识别完成', {
+          description: '已将语音转换为文字'
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error('语音识别错误', {
+        description: error
+      });
+    }
+  });
 
   // 处理发送
   const handleSubmit = (message: string) => {
@@ -50,10 +75,16 @@ export const InputArea: React.FC<InputAreaProps> = ({
     onChange(val);
   };
 
-  // 语音录制相关（占位实现）
+  // 语音录制处理
   const handleVoiceToggle = () => {
-    setIsRecording(!isRecording);
-    // TODO: 实现语音录制功能
+    if (!speech.isSupported) {
+      toast.error('浏览器不支持语音识别', {
+        description: '请使用 Chrome 浏览器以使用语音输入功能'
+      });
+      return;
+    }
+
+    speech.toggleListening();
   };
 
   // 表情选择（占位实现）
@@ -186,10 +217,6 @@ export const InputArea: React.FC<InputAreaProps> = ({
                 minRows: 1,
                 maxRows: 1
               }}
-              allowSpeech={{
-                recording: isRecording,
-                onRecordingChange: (recording) => setIsRecording(recording)
-              }}
               classNames={{
                 input: `
                   px-4 py-3
@@ -248,15 +275,15 @@ export const InputArea: React.FC<InputAreaProps> = ({
                     disabled={disabled}
                     className={`
                       p-2.5 rounded-xl transition-all duration-200
-                      ${isRecording
+                      ${speech.isListening
                         ? 'text-white bg-red-500 hover:bg-red-600 animate-pulse'
                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
                       }
                       disabled:opacity-40 disabled:cursor-not-allowed
                     `}
-                    title={isRecording ? '停止录音' : '语音输入'}
+                    title={speech.isListening ? '点击停止录音' : '语音输入'}
                   >
-                    {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    {speech.isListening ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                   </button>
 
                   {/* 发送按钮 - 自定义样式 */}
@@ -305,13 +332,18 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
           {/* 状态指示 */}
           <div className="flex items-center space-x-3 text-xs">
-            {isRecording && (
+            {speech.isListening && (
               <span className="flex items-center space-x-2 text-red-500">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
-                <span>正在录音</span>
+                <span>正在录音...</span>
+                {speech.interimTranscript && (
+                  <span className="text-gray-500 dark:text-gray-400 ml-2 truncate max-w-xs">
+                    {speech.interimTranscript}
+                  </span>
+                )}
               </span>
             )}
 

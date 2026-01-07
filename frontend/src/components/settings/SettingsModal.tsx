@@ -100,12 +100,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   // 关闭移动端菜单当标签改变时
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
   // 关闭移动端菜单当模态框关闭时
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsMobileMenuOpen(false);
       setShowResetConfirm(false);
     }

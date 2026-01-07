@@ -10,19 +10,33 @@ interface EmotionResult {
   mode: ChatMode;
 }
 
-export function useEmotionAnalysis({ 
+export function useEmotionAnalysis({
   userId: _userId, // eslint-disable-line @typescript-eslint/no-unused-vars
   autoAnalyze: _autoAnalyze, // eslint-disable-line @typescript-eslint/no-unused-vars
   historyLimit: _historyLimit // eslint-disable-line @typescript-eslint/no-unused-vars
-}: { 
-  userId: string; 
-  autoAnalyze?: boolean; 
-  historyLimit?: number; 
+}: {
+  userId: string;
+  autoAnalyze?: boolean;
+  historyLimit?: number;
 }) {
   const [currentEmotion, setCurrentEmotion] = useState<EmotionResult | null>(null);
   const [trend, setTrend] = useState<{direction: string, score: number} | null>(null);
   const recentEmotions = useRef<EmotionResult[]>([]);
   const providerRef = useRef<BaseProvider | null>(null);
+
+  // 更新情感状态 - 必须在 analyzeMessage 之前声明
+  const updateEmotion = useCallback((emotion: EmotionResult) => {
+    setCurrentEmotion(emotion);
+    recentEmotions.current = [...recentEmotions.current, emotion].slice(-5);
+
+    if (recentEmotions.current.length >= 3) {
+      const avg = recentEmotions.current.reduce((sum, e) => sum + e.intensity, 0) / 3;
+      setTrend({
+        direction: avg > 0.6 ? 'improving' : avg < 0.4 ? 'declining' : 'stable',
+        score: avg
+      });
+    }
+  }, []);
 
   // 直接的情感分析
   const analyzeMessage = useCallback(async (message: string) => {
@@ -51,20 +65,7 @@ export function useEmotionAnalysis({
     const fallback = getSimpleFallback(message);
     updateEmotion(fallback);
     return convertToLegacyFormat(fallback);
-  }, []);
-
-  const updateEmotion = (emotion: EmotionResult) => {
-    setCurrentEmotion(emotion);
-    recentEmotions.current = [...recentEmotions.current, emotion].slice(-5);
-    
-    if (recentEmotions.current.length >= 3) {
-      const avg = recentEmotions.current.reduce((sum, e) => sum + e.intensity, 0) / 3;
-      setTrend({
-        direction: avg > 0.6 ? 'improving' : avg < 0.4 ? 'declining' : 'stable',
-        score: avg
-      });
-    }
-  };
+  }, [updateEmotion]);
 
   // 其他方法的简化实现
   const analyzeEmotionTrend = useCallback((messages: ChatMessage[]) => {

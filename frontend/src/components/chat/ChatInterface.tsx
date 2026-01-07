@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Bubble, CodeHighlighter, Actions, Welcome, Prompts } from '@ant-design/x';
+import { Bubble, CodeHighlighter, Actions, Welcome, Prompts, type BubbleItemType } from '@ant-design/x';
 import { XMarkdown } from '@ant-design/x-markdown';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -167,7 +167,6 @@ const EmptyState: React.FC<{ selectedMode: ChatMode; onPromptClick?: (prompt: st
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages,
   selectedMode,
-  streamingMessageId,
   hasProvider = true,
   onOpenSettings,
   debugMode = false,
@@ -182,7 +181,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const bubbleItems = useMemo(() => {
     return messages.map((msg) => {
       const isUser = msg.role === 'user';
-      const bubbleItem: any = {
+      const bubbleItem: BubbleItemType = {
         key: msg.id,
         role: msg.role,
         content: isUser ? msg.content : (
@@ -195,9 +194,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               }}
               openLinksInNewTab
               components={{
-                code: (props) => {
-                  const { children, domNode } = props as any;
-                  const className = (props as any).className || '';
+                code: (props: unknown) => {
+                  const propsWithNode = props as { children?: React.ReactNode; domNode?: { parent?: { name?: string } }; className?: string };
+                  const { children, domNode } = propsWithNode;
+                  const className = propsWithNode.className || '';
 
                   // 检查是否是代码块（父节点是 pre）
                   const isCodeBlock = domNode?.parent?.name === 'pre';
@@ -262,7 +262,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       // 添加 extra (情感分析和调试信息)
       if (msg.role === 'assistant' && debugMode) {
-        const extraElements = [];
+        const extraElements: React.ReactNode[] = [];
 
         // 情感分析
         if (msg.emotionAnalysis) {
@@ -320,7 +320,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       return bubbleItem;
     });
-  }, [messages, streamingMessageId, debugMode, debugInfo, expandedDebug, resolvedTheme]);
+  }, [messages, debugMode, debugInfo, expandedDebug, resolvedTheme]);
 
   // 模式配色配置 - 根据主题动态调整
   const roleConfig = {
@@ -341,7 +341,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     },
     assistant: {
       placement: 'start' as const,
-      avatar: (info: any) => (
+      avatar: (info: { typing?: boolean } | undefined) => (
         <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${
           resolvedTheme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
         }`}>

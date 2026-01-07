@@ -41,6 +41,7 @@ export const App: React.FC = () => {
 
   // 当设置中的默认模式变化时，更新selectedMode
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedMode(settings.defaultMode);
   }, [settings.defaultMode]);
 
