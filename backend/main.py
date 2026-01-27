@@ -6,7 +6,7 @@ Ollama OpenAI 兼容 API 代理服务
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 import httpx
 import json
 import logging
@@ -157,10 +157,10 @@ async def list_models():
                 "data": openai_models
             }
 
-    except httpx.RequestError as e:
-        logger.error(f"Failed to connect to Ollama: {e}")
+    except httpx.RequestError as request_error:
+        logger.error(f"Failed to connect to Ollama: {request_error}")
         raise HTTPException(
-            status_code=503, detail=f"Ollama service unavailable: {str(e)}")
+            status_code=503, detail=f"Ollama service unavailable: {str(request_error)}")
 
 
 @app.post("/v1/chat/completions")
@@ -186,15 +186,15 @@ async def chat_completions(request: ChatCompletionRequest):
         if request.stream:
             # 流式响应
             async def generate_stream():
-                async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+                async with httpx.AsyncClient(timeout=TIMEOUT) as stream_client:
                     try:
-                        async with client.stream(
+                        async with stream_client.stream(
                             "POST",
                             f"{OLLAMA_BASE_URL}/api/generate",
                             json=ollama_payload
-                        ) as response:
-                            if response.status_code != 200:
-                                error_msg = await response.aread()
+                        ) as stream_response:
+                            if stream_response.status_code != 200:
+                                error_msg = await stream_response.aread()
                                 yield create_stream_chunk(
                                     f"Error: {error_msg.decode()}",
                                     request.model,
@@ -202,7 +202,7 @@ async def chat_completions(request: ChatCompletionRequest):
                                 )
                                 return
 
-                            async for line in response.aiter_lines():
+                            async for line in stream_response.aiter_lines():
                                 if line:
                                     try:
                                         data = json.loads(line)
@@ -221,9 +221,9 @@ async def chat_completions(request: ChatCompletionRequest):
                                             return
                                     except json.JSONDecodeError:
                                         continue
-                    except Exception as e:
-                        logger.error(f"Stream error: {e}")
-                        yield create_stream_chunk(f"Error: {str(e)}", request.model, "error")
+                    except Exception as stream_error:
+                        logger.error(f"Stream error: {stream_error}")
+                        yield create_stream_chunk(f"Error: {str(stream_error)}", request.model, "error")
 
             return StreamingResponse(
                 generate_stream(),
@@ -236,17 +236,17 @@ async def chat_completions(request: ChatCompletionRequest):
             )
         else:
             # 非流式响应
-            async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-                response = await client.post(
+            async with httpx.AsyncClient(timeout=TIMEOUT) as non_stream_client:
+                non_stream_response = await non_stream_client.post(
                     f"{OLLAMA_BASE_URL}/api/generate",
                     json=ollama_payload
                 )
 
-                if response.status_code != 200:
-                    raise HTTPException(status_code=response.status_code,
+                if non_stream_response.status_code != 200:
+                    raise HTTPException(status_code=non_stream_response.status_code,
                                         detail="Failed to generate response")
 
-                ollama_response = response.json()
+                ollama_response = non_stream_response.json()
 
                 # 转换为 OpenAI 格式
                 usage = {
@@ -262,9 +262,9 @@ async def chat_completions(request: ChatCompletionRequest):
                     usage=usage
                 )
 
-    except Exception as e:
-        logger.error(f"Chat completion error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as chat_error:
+        logger.error(f"Chat completion error: {chat_error}")
+        raise HTTPException(status_code=500, detail=str(chat_error))
 
 
 @app.post("/v1/completions")
@@ -285,13 +285,13 @@ async def completions(request: CompletionRequest):
         if request.stream:
             # 流式响应
             async def generate_stream():
-                async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-                    async with client.stream(
+                async with httpx.AsyncClient(timeout=TIMEOUT) as completion_stream_client:
+                    async with completion_stream_client.stream(
                         "POST",
                         f"{OLLAMA_BASE_URL}/api/generate",
                         json=ollama_payload
-                    ) as response:
-                        async for line in response.aiter_lines():
+                    ) as completion_stream_response:
+                        async for line in completion_stream_response.aiter_lines():
                             if line:
                                 try:
                                     data = json.loads(line)
@@ -320,17 +320,17 @@ async def completions(request: CompletionRequest):
             )
         else:
             # 非流式响应
-            async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-                response = await client.post(
+            async with httpx.AsyncClient(timeout=TIMEOUT) as completion_client:
+                completion_response = await completion_client.post(
                     f"{OLLAMA_BASE_URL}/api/generate",
                     json=ollama_payload
                 )
 
-                if response.status_code != 200:
-                    raise HTTPException(status_code=response.status_code,
+                if completion_response.status_code != 200:
+                    raise HTTPException(status_code=completion_response.status_code,
                                         detail="Failed to generate response")
 
-                ollama_response = response.json()
+                ollama_response = completion_response.json()
 
                 return {
                     "id": f"cmpl-{uuid.uuid4().hex[:8]}",
@@ -350,9 +350,9 @@ async def completions(request: CompletionRequest):
                     }
                 }
 
-    except Exception as e:
-        logger.error(f"Completion error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as completion_error:
+        logger.error(f"Completion error: {completion_error}")
+        raise HTTPException(status_code=500, detail=str(completion_error))
 
 
 @app.get("/")
@@ -360,19 +360,19 @@ async def completions(request: CompletionRequest):
 async def health_check():
     """健康检查"""
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f"{OLLAMA_BASE_URL}/api/version", timeout=5.0)
-            if response.status_code == 200:
+        async with httpx.AsyncClient() as health_client:
+            health_response = await health_client.get(f"{OLLAMA_BASE_URL}/api/version", timeout=5.0)
+            if health_response.status_code == 200:
                 return {
                     "status": "healthy",
                     "ollama": "connected",
                     "api": "openai-compatible"
                 }
-    except Exception as e:
+    except Exception as health_error:
         return {
             "status": "unhealthy",
             "ollama": "disconnected",
-            "error": str(e)
+            "error": str(health_error)
         }
 
 

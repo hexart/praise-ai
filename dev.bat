@@ -21,15 +21,15 @@ echo 📡 启动后端服务...
 cd backend
 
 REM 检查虚拟环境是否存在
-if not exist "venv" (
+if not exist ".venv" (
     echo ❌ 虚拟环境不存在，请先创建虚拟环境：
-    echo    cd backend ^&^& python -m venv venv ^&^& venv\Scripts\activate ^&^& pip install -r requirements.txt
+    echo    cd backend ^&^& python -m venv .venv ^&^& .venv\Scripts\activate ^&^& pip install -r requirements.txt
     pause
     exit /b 1
 )
 
 REM 在新窗口中启动FastAPI
-start "Praise AI Backend" cmd /k "venv\Scripts\activate && python main.py"
+start "Praise AI Backend" cmd /k ".venv\Scripts\activate && python main.py"
 cd ..
 
 REM 等待一下，让后端启动

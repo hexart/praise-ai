@@ -56,11 +56,11 @@ This script automatically:
 cd backend
 
 # Create virtual environment (first time only)
-python -m venv venv
+python -m venv .venv
 
 # Activate virtual environment
-source venv/bin/activate    # macOS/Linux
-venv\Scripts\activate       # Windows
+source .venv/bin/activate    # macOS/Linux
+.venv\Scripts\activate       # Windows
 
 # Install dependencies
 pip install -r requirements.txt
