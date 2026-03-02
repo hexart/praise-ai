@@ -15,6 +15,7 @@ build/
 
 # IDE
 .idea/
+.qoder/
 *.swp
 *.swo
 

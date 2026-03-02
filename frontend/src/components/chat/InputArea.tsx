@@ -1,11 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { Send, Mic, Square, Smile, Paperclip } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Mic, Square, Smile, Paperclip, X } from 'lucide-react';
 import { Sender } from '@ant-design/x';
 import type { SenderRef } from '@ant-design/x/es/sender';
 import type { ChatMode } from '../../types/chat';
 import { MODE_CONFIGS } from '../../constants/modes';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { toast } from 'sonner';
+
+// 常用 Emoji 分类
+const EMOJI_CATEGORIES = {
+  '常用': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕'],
+  '手势': ['👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👋', '🤚', '🖐️', '✋', '🖖', '👏', '🙌', '🤲', '🤝', '🙏', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄'],
+  '情感': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '💯', '🔢', '💫', '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💢', '💬', '💭', '🗯️', '♠️', '♣️', '♥️', '♦️'],
+  '自然': ['🌸', '🌺', '🌻', '🌼', '🏵️', '🌹', '🥀', '🌺', '🌷', '🌱', '🌿', '🍀', '🍁', '🍂', '🍃', '🌾', '🌿', '🎋', '🎍', '🌴', '🌵', '🌷', '☀️', '🌤️', '⛅', '🌥️', '☁️', '🌧️', '⛈️', '🌩️', '🌨️', '❄️', '🌪️', '🌈', '🌂', '☂️', '☔', '⚡', '🌊', '🌊', '🌊', '🌙', '⭐', '🌛', '🌜', '🌚', '🌝', '🌞'],
+  '食物': ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🫘', '🌰', '🍞', '🥐', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🫔'],
+  '动物': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊']
+};
 
 interface InputAreaProps {
   value: string;
@@ -28,7 +38,27 @@ export const InputArea: React.FC<InputAreaProps> = ({
   maxLength = 2000
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<keyof typeof EMOJI_CATEGORIES>('常用');
   const senderRef = useRef<SenderRef | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭表情面板
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   // 语音识别
   const speech = useSpeechRecognition({
@@ -87,9 +117,20 @@ export const InputArea: React.FC<InputAreaProps> = ({
     speech.toggleListening();
   };
 
-  // 表情选择（占位实现）
+  // 表情面板开关
   const handleEmojiClick = () => {
-    // TODO: 实现表情选择功能
+    setShowEmojiPicker(!showEmojiPicker);
+  };
+
+  // 选择表情 - 插入到光标位置
+  const handleEmojiSelect = (emoji: string) => {
+    // 使用 SenderRef 的 insert 方法插入文本到光标位置
+    if (senderRef.current?.insert) {
+      senderRef.current.insert(emoji, 'cursor');
+    } else {
+      // 降级处理：追加到末尾
+      onChange(value + emoji);
+    }
   };
 
   // 附件上传（占位实现）
@@ -256,10 +297,14 @@ export const InputArea: React.FC<InputAreaProps> = ({
                   <button
                     onClick={handleEmojiClick}
                     disabled={disabled}
-                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100
-                      rounded-lg transition-all duration-200
-                      dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700
-                      disabled:opacity-40 disabled:cursor-not-allowed"
+                    className={`
+                      p-2 rounded-lg transition-all duration-200
+                      ${showEmojiPicker
+                        ? `text-${modeConfig.accentColor}-500 bg-${modeConfig.accentColor}-50 dark:bg-${modeConfig.accentColor}-900/20`
+                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                      }
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                    `}
                     title="添加表情"
                   >
                     <Smile className="w-4 h-4" />
@@ -315,6 +360,56 @@ export const InputArea: React.FC<InputAreaProps> = ({
             />
           </div>
         </div>
+
+        {/* Emoji 选择面板 */}
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className="absolute bottom-full left-0 right-0 mb-2 mx-4 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+          >
+            {/* 分类标签 */}
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center space-x-1 overflow-x-auto max-w-[calc(100%-40px)] scrollbar-hide">
+                {Object.keys(EMOJI_CATEGORIES).map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category as keyof typeof EMOJI_CATEGORIES)}
+                    className={`
+                      px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all duration-200
+                      ${activeCategory === category
+                        ? `bg-linear-to-r ${modeConfig.gradient} text-${modeConfig.accentColor}-600 dark:text-${modeConfig.accentColor}-400`
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }
+                    `}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowEmojiPicker(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Emoji 网格 - 移动端兼容 */}
+            <div className="h-48 overflow-y-auto p-2">
+              <div className="grid grid-cols-8 sm:grid-cols-9 md:grid-cols-10 gap-1">
+                {EMOJI_CATEGORIES[activeCategory].map((emoji, index) => (
+                  <button
+                    key={`${emoji}-${index}`}
+                    onClick={() => handleEmojiSelect(emoji)}
+                    className="p-2 text-xl hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors active:scale-90"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 底部提示信息 */}
         <div className="mt-3 flex items-center justify-between px-4">
